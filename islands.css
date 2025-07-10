@@ -1,0 +1,31 @@
+        .search-container {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .folder-tab {
+            border-style: solid;
+            border-top-width: 1px;
+            border-left-width: 1px;
+            border-right-width: 1px;
+            border-bottom-width: 0px;
+            border-color: #e5e5e5;
+            color: #666;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: normal;
+            position: relative;
+            display: inline-block;
+            z-index: 2;
+        }
+
+        .island-block {
+            border-style: solid;
+            border-width: 1px;
+            border-color: #e5e5e5;
+            padding: 0;
+        }
+
+        .content-area {
+            padding: 16px;
+        }
