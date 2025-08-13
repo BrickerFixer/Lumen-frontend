@@ -22,15 +22,9 @@
 
       <div id="fastlane" class="fastlane" aria-hidden="true">
         <div class="fl-grid">
-          <div class="fl-item"><div class="ico"></div><span>Web</span></div>
-          <div class="fl-item"><div class="ico"></div><span>Images</span></div>
-          <div class="fl-item"><div class="ico"></div><span>Video</span></div>
-          <div class="fl-item"><div class="ico"></div><span>Maps</span></div>
-          <div class="fl-item"><div class="ico"></div><span>News</span></div>
-          <div class="fl-item"><div class="ico"></div><span>Translate</span></div>
           <div class="fl-item"><div class="ico"></div><span>Mail</span></div>
           <div class="fl-item"><div class="ico"></div><span>Docs</span></div>
-          <div class="fl-item"><div class="ico"></div><span>Settings</span></div>
+          <a href="/settings"><div class="fl-item"><div class="ico"></div><span>Settings</span></div></a>
           <div class="fl-item"><div class="ico"></div><span>Profile</span></div>
           <div class="fl-item"><div class="ico"></div><span>Shortcuts</span></div>
           <div class="fl-item"><div class="ico"></div><span>Labs</span></div>
@@ -73,7 +67,25 @@
       <button id="goBtn" class="bar-search-button" type="button">Go</button>
       <button id="advancedBtn" class="bar-param-button" type="button" style="width:auto; padding:0 10px;">Advanced</button>
     </div>
+    
   </main>
+  <footer id="siteFooter" class="site-footer" role="contentinfo" aria-label="Footer">
+    <div class="foot-inner">
+      <div class="foot-meta">
+        <span id="feVersion">Frontend v—</span>
+        <span>•</span>
+        <span id="nodeVersion">Node —</span>
+      </div>
+      <nav class="foot-links" aria-label="Footer links">
+        <a href="/settings">Settings</a>
+        <a href="/instances">Instances</a>
+        <a href="/news">News</a>
+        <a href="/api">API</a>
+        <a href="/about">About</a>
+        <a href="https://github.com/your/repo" target="_blank" rel="noopener noreferrer">Source</a>
+      </nav>
+    </div>
+  </footer>
 
   <script>
     // Fastlane toggle (as before)
@@ -112,7 +124,7 @@
     window.addEventListener("load",()=>{ const q=document.getElementById("q"); if(q) q.focus({preventScroll:true}); });
 
     // Homepage search + inline Advanced
-    const SEARCH_PAGE = '/indsearch';
+    const SEARCH_PAGE = '/indsearch.html';
     const pageUrl = new URL(window.location.href);
     const defaultNode = pageUrl.searchParams.get('node') || 'http://localhost:3000';
 
@@ -240,5 +252,87 @@
     homeSearchForm.addEventListener('submit', (e) => { e.preventDefault(); doSearchRedirect(); });
     goBtn.addEventListener('click', doSearchRedirect);
   </script>
+  <script>
+(function() {
+  const feSpan = document.getElementById('feVersion');
+  const nodeSpan = document.getElementById('nodeVersion');
+
+  // Frontend version from meta or global (fallback to dev)
+  const feMeta = document.querySelector('meta[name="app:version"]');
+  const FRONTEND_VERSION = (window.__FRONTEND_VERSION__ || (feMeta && feMeta.content) || 'dev').trim();
+  feSpan.textContent = `Frontend v${FRONTEND_VERSION}`;
+
+  // Node address: ?node=... or default
+  function getDefaultNode() {
+    try {
+      const u = new URL(window.location.href);
+      return u.searchParams.get('node') || 'http://localhost:3000';
+    } catch {
+      return 'http://localhost:3000';
+    }
+  }
+
+  // Try to read version and name from endpoints (both optional)
+  async function fetchNodeInfo(nodeBase) {
+    const info = { name: '', version: '' };
+
+    // Helper with timeout
+    async function getJSON(url, ms = 2500) {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), ms);
+      try {
+        const res = await fetch(url, { signal: ctrl.signal });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return await res.json();
+      } finally {
+        clearTimeout(t);
+      }
+    }
+
+    try {
+      const meta = await getJSON(nodeBase + '/metadata');
+      info.name = meta && (meta.name || '');
+      // If your backend ever adds a version to metadata
+      info.version = (meta && (meta.version || meta.nodeVersion)) || '';
+    } catch {}
+
+    if (!info.version) {
+      try {
+        const health = await getJSON(nodeBase + '/health');
+        // If your backend ever adds version to health
+        info.version = (health && (health.version || health.nodeVersion)) || '';
+      } catch {}
+    }
+
+    // Fallbacks
+    if (!info.name) {
+      try { info.name = new URL(nodeBase).host; } catch { info.name = nodeBase; }
+    }
+    return info;
+  }
+
+  async function updateNodeFooter(nodeBase) {
+    try {
+      const info = await fetchNodeInfo(nodeBase);
+      const verText = info.version ? ` v${info.version}` : '';
+      nodeSpan.textContent = `Node: ${info.name}${verText}`;
+    } catch {
+      nodeSpan.textContent = 'Node: offline';
+    }
+  }
+
+  const initialNode = getDefaultNode();
+  updateNodeFooter(initialNode);
+
+  // If Advanced node input exists, update footer when it changes
+  const advNode = document.getElementById('advNode');
+  if (advNode) {
+    advNode.addEventListener('change', () => {
+      const nextNode = (advNode.value || '').trim() || getDefaultNode();
+      updateNodeFooter(nextNode);
+    });
+  }
+})();
+</script>
 </body>
 </html>

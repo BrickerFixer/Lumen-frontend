@@ -50,7 +50,7 @@
       el.style.transform = `translate3d(${ox}px, ${oy}px, 0)`;
     });
   }
-  function center() { const r = stage.getBoundingClientRect(); apply(r.width/2, r.height/2); }
+  function center() { const r = stage.getBoundingClientRect(); apply(r.width/2, r.height/2);}
 
   stage.addEventListener('pointermove', (e) => {
     const r = stage.getBoundingClientRect();
