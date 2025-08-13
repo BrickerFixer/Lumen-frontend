@@ -4,40 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Index — Make Your Own Logo</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed:wght@400&display=swap');
-
-  html, body { height: 100%; margin: 0; background: transparent; }
-  .stage {
-    position: relative; width: 100%; height: 100%;
-    min-width: 272px; min-height: 92px;
-    display: grid; place-items: center; overflow: hidden;
-  }
-
-  .logo {
-    position: relative; z-index: 2;
-    font-family: "Fira Sans Extra Condensed", sans-serif;
-    font-weight: 400;
-    letter-spacing: .5px;
-    line-height: 1;
-    font-size: 96px;
-    color: #fff;            /* white text for dark backgrounds */
-    user-select: none;
-    transform-origin: center;
-    will-change: transform;
-    text-align: center;
-    justify-self: center;
-  }
-  .logo .i { color: #1a73e8; }    /* blue Index I */
-  .logo .rest { color: #fff; }
-
-  .hint {
-    position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
-    font: 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    color: #94a3b8; opacity: .9; white-space: nowrap; pointer-events: none;
-  }
-  @media (max-height: 110px) { .hint { display: none; } }
-</style>
+<link rel="stylesheet" href="/resources/styles/branding.css">
 </head>
 <body>
   <div id="stage" class="stage" aria-live="polite" aria-label="Type in the search bar to customize the Index logo.">
@@ -46,7 +13,6 @@
     </div>
     <div class="hint">Type in the search bar to make your own Index logo</div>
   </div>
-
 <script>
 (() => {
   const stage = document.getElementById('stage');

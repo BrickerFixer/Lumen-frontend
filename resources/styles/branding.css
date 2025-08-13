@@ -1,5 +1,24 @@
   @import url('https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed:wght@400&display=swap');
 
+  :root {
+      --bg: #ffffff;
+      --fg: #0f1115;
+      --muted: #6b7177;
+      --hair: #e5e7eb;
+      --acc: #92BAC2;
+      --hdr-h: 60px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+      :root {
+          --bg: #0f1115;
+          --fg: #f3f4f6;
+          --muted: #9aa3aa;
+          --hair: #1f2428;
+          --acc: #B8EAF5;
+      }
+  }
+
   html,
   body {
       height: 100%;
@@ -20,7 +39,6 @@
 
   .logo {
       position: relative;
-      z-index: 2;
       font-family: "Fira Sans Extra Condensed", sans-serif;
       font-weight: 400;
       letter-spacing: .5px;
@@ -36,12 +54,12 @@
   }
 
   .logo .i {
-      color: #1a73e8;
+      color: var(--acc);
   }
 
   /* blue Index I */
   .logo .rest {
-      color: #fff;
+      color: var(--fg);
   }
 
   .hint {

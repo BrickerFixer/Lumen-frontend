@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Index — Flashlight Doodle</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed:wght@400;700&display=swap');
 
   :root {
     --mx: 50%;
@@ -13,38 +12,6 @@
     --r: 110px;   /* flashlight radius (px) */
     --f: 28px;    /* feather/soft edge (px) */
   }
-
-  html, body {
-    height: 100%;
-    margin: 0;
-    background: transparent; /* let the host page show through */
-  }
-
-  .stage {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    min-width: 272px;
-    min-height: 92px;
-    display: grid;
-    place-items: center;
-    overflow: hidden;
-    touch-action: none;
-  }
-
-  /* The logo text */
-  .logo {
-    position: relative;
-    z-index: 0;
-    font-family: "Fira Sans Extra Condensed", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    font-weight: 400;
-    letter-spacing: .5px;
-    line-height: 1;
-    font-size: clamp(96px, 9vw, 100px);
-    user-select: none;
-  }
-  .logo .i { color: #1a73e8; }
-  .logo .rest { color: #fff; }
 
   /* Dark overlay with a transparent circle following the cursor */
   .shade {
@@ -67,24 +34,9 @@
       );
     transition: background-position .06s linear;
   }
-
-  /* Optional hint (hidden on very small heights) */
-  .hint {
-    position: absolute;
-    bottom: 6px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2;
-    font: 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    color: #6b7280;
-    opacity: .9;
-    white-space: nowrap;
-    pointer-events: none;
-  }
-  @media (max-height: 120px) {
-    .hint { display: none; }
-  }
 </style>
+
+<link href="/resources/styles/branding.css" rel="stylesheet">
 </head>
 <body>
   <div id="stage" class="stage" aria-label="Index flashlight doodle. Move your cursor or finger to reveal.">
