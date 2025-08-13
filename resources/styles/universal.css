@@ -1,0 +1,261 @@
+:root {
+    --bg: #ffffff;
+    --fg: #0f1115;
+    --muted: #6b7177;
+    --hair: #e5e7eb;
+    --acc: #92BAC2;
+    --hdr-h: 60px;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #0f1115;
+        --fg: #f3f4f6;
+        --muted: #9aa3aa;
+        --hair: #1f2428;
+        --acc: #B8EAF5;
+    }
+}
+
+/* Base */
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 15px/1.45 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+}
+
+/* Header */
+.hdr {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--bg);
+    border-bottom: 1px solid var(--hair);
+    overflow: hidden;
+    transition: height .25s ease;
+    height: var(--hdr-h);
+    min-height: 56px;
+}
+
+.hdr-inner {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 8px 16px;
+    display: grid;
+    grid-template-rows: 60px auto auto;
+}
+
+.bar {
+    display: flex;
+    align-items: center;
+    height: 60px;
+    justify-content: space-between;
+}
+
+.logo-img {
+    height: 50px;
+    object-fit: contain;
+    display: block;
+}
+
+/* Header modifiers */
+.hdr.is-filters {
+    height: calc(var(--hdr-h) + 60px);
+}
+
+.hdr.is-fastlane {
+    height: calc(var(--hdr-h) + 260px);
+}
+
+/* Buttons */
+.icon-btn {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--fg);
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+}
+
+.icon {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
+
+.btn {
+    border: 1px solid var(--hair);
+    background: var(--bg);
+    color: var(--fg);
+    padding: 8px 8px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn[disabled] {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+/* Search bar */
+.search {
+    width: 100%;
+    position: relative;
+}
+
+.search-table {
+    display: flex;
+    width: 100%;
+    height: 40px;
+}
+
+.q {
+    height: 40px;
+    border: 2px solid var(--acc);
+    background: var(--bg);
+    color: var(--fg);
+    padding: 0 12px;
+    font: 15px/1.2 inherit;
+    outline: none;
+    width: 100%;
+}
+
+.bar-search-button {
+    height: 100%;
+    width: 96px;
+    background: var(--acc);
+    border: none;
+    cursor: pointer;
+}
+
+.bar-param-button {
+    height: 100%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--fg);
+    border: 2px solid var(--acc);
+}
+
+/* Filters row (SERP header) + shared form inputs */
+.filters {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 8px;
+    align-items: center;
+    padding: 8px 0 10px;
+    border-top: 1px solid var(--hair);
+}
+
+.filters.hidden {
+    display: none;
+}
+
+.sel {
+    height: 34px;
+    border: 2px solid var(--hair);
+    background: var(--bg);
+    color: var(--fg);
+    padding: 0 8px;
+    font: 14px/1.2 inherit;
+}
+
+.flt-input {
+    height: 34px;
+    border: 2px solid var(--hair);
+    background: var(--bg);
+    color: var(--fg);
+    padding: 0 8px;
+    font: 14px/1.2 inherit;
+    width: 100%;
+}
+
+.lbl {
+    font-size: 12px;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+/* Fastlane */
+.fastlane {
+    padding: 12px 0 16px;
+    border-top: 1px solid var(--hair);
+    display: none;
+}
+
+.fastlane.open {
+    display: block;
+}
+
+.fl-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.fl-item {
+    border: 1px solid var(--hair);
+    padding: 18px 8px;
+    text-align: center;
+    user-select: none;
+    cursor: pointer;
+}
+
+.fl-item .ico {
+    width: 20px;
+    height: 20px;
+    margin: 0 auto 8px;
+    border: 2px solid var(--acc);
+}
+
+.fl-item span {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+/* Suggestions (visuals only; positioned by JS) */
+.suggestions-list {
+    background: var(--bg);
+    border: 1px solid var(--hair);
+    z-index: 9999;
+    display: none;
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.suggestion-item {
+    padding: 8px 10px;
+    cursor: pointer;
+}
+
+.suggestion-item:hover,
+.suggestion-item.selected {
+    background: var(--hair);
+}
+
+/* Responsive bits shared by both pages */
+@media (max-width: 1080px) {
+    :root {
+        --asideW: 300px;
+    }
+}

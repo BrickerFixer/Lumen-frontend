@@ -1,0 +1,53 @@
+.wrap {
+  width: min(92vw, 640px);
+  text-align: center;
+  margin: 0 auto;
+  padding-top: var(--hdr-h);
+}
+
+/* Logo */
+#logo {
+  position: relative;
+  margin: 0 auto 24px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  user-select: none;
+}
+#logo img, #logo iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+  background: transparent;
+}
+.logo-text {
+  font-family: "Fira Sans Extra Condensed", sans-serif;
+  font-weight: 400;
+  letter-spacing: .5px;
+  font-size: clamp(56px, 11vw, 104px);
+  line-height: 1;
+}
+.logo-text .i { color: var(--logo-blue); }
+.logo-text .rest { color: var(--fg); }
+
+/* Inline Advanced panel attached to search */
+.search-stack { width: 100%; }
+.search-adv {
+  display: none;
+  border: 2px solid var(--acc);
+  border-top: none;     /* attach to input */
+  background: var(--bg);
+  text-align: left;
+  padding: 10px;
+}
+.search-adv.open { display: block; }
+.search-stack.adv-open .q { border-bottom-color: transparent; } /* seamless join */
+
+.adv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.filters-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 8px; }
+
+@media (max-width: 700px) {
+  .adv-grid { grid-template-columns: 1fr; }
+  .filters-grid { grid-template-columns: 1fr; }
+}
