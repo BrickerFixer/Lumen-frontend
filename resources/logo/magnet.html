@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Index — Magnetic Letters</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed:wght@400;700&display=swap');
+  html, body { height: 100%; margin: 0; background: transparent; }
+  .stage { position: relative; width: 100%; height: 100%; min-width: 272px; min-height: 92px; display: grid; place-items: center; overflow: hidden; touch-action: none; }
+  .logo { font-family: "Fira Sans Extra Condensed", sans-serif; font-weight: 400; letter-spacing: .5px; font-size: clamp(96px, 9vw, 100px); line-height: 1; user-select: none; }
+  .l { display: inline-block; will-change: transform; transition: transform .08s ease-out; }
+  .i { color: #1a73e8; } .rest { color: #fff; }
+  .hint { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); font: 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color: #6b7280; }
+</style>
+</head>
+<body>
+  <div id="stage" class="stage" aria-label="Magnetic Index logo. Move mouse/touch to repel letters.">
+    <div class="logo">
+      <span class="l i">I</span><span class="l rest">n</span><span class="l rest">d</span><span class="l rest">e</span><span class="l rest">x</span>
+    </div>
+    <div class="hint">Move pointer to push letters • Arrows to move the field</div>
+  </div>
+
+<script>
+(() => {
+  const stage = document.getElementById('stage');
+  const letters = Array.from(document.querySelectorAll('.l'));
+  let centers = [];
+  const R = 140;      // influence radius px
+  const STR = 22;     // max offset px
+  let field = { x: 0, y: 0 };
+
+  function measure() {
+    const rect = stage.getBoundingClientRect();
+    centers = letters.map(el => {
+      const r = el.getBoundingClientRect();
+      return { x: (r.left + r.width/2) - rect.left, y: (r.top + r.height/2) - rect.top };
+    });
+    if (!field.x && !field.y) { field.x = rect.width/2; field.y = rect.height/2; }
+  }
+  function apply(x, y) {
+    const rect = stage.getBoundingClientRect();
+    field.x = x; field.y = y;
+    letters.forEach((el, i) => {
+      const c = centers[i];
+      const dx = x - c.x, dy = y - c.y;
+      const d = Math.hypot(dx, dy) || 0.0001;
+      if (d >= R) { el.style.transform = 'translate3d(0,0,0)'; return; }
+      const t = 1 - d / R;                  // 0..1
+      const f = t * t;                       // ease
+      const ox = -dx / d * STR * f;
+      const oy = -dy / d * STR * f;
+      el.style.transform = `translate3d(${ox}px, ${oy}px, 0)`;
+    });
+  }
+  function center() { const r = stage.getBoundingClientRect(); apply(r.width/2, r.height/2); }
+
+  stage.addEventListener('pointermove', (e) => {
+    const r = stage.getBoundingClientRect();
+    apply(e.clientX - r.left, e.clientY - r.top);
+  });
+  stage.addEventListener('pointerdown', (e) => {
+    const r = stage.getBoundingClientRect();
+    apply(e.clientX - r.left, e.clientY - r.top);
+  });
+  stage.addEventListener('pointerleave', () => { center(); });
+
+  // Keyboard move for accessibility
+  stage.tabIndex = 0;
+  stage.addEventListener('keydown', (e) => {
+    const step = e.shiftKey ? 24 : 12;
+    let { x, y } = field;
+    if (e.key === 'ArrowLeft') x -= step;
+    else if (e.key === 'ArrowRight') x += step;
+    else if (e.key === 'ArrowUp') y -= step;
+    else if (e.key === 'ArrowDown') y += step;
+    else return;
+    e.preventDefault();
+    const r = stage.getBoundingClientRect();
+    apply(Math.max(0, Math.min(r.width, x)), Math.max(0, Math.min(r.height, y)));
+  });
+
+  window.addEventListener('resize', () => { measure(); center(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { measure(); center(); });
+
+  // init
+  measure(); center();
+})();
+</script>
+</body>
+</html>

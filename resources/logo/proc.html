@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Index — Procedural Flowfield</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed:wght@400&display=swap');
+
+  html, body { height: 100%; margin: 0; background: transparent; }
+  .stage {
+    position: relative; width: 100%; height: 100%;
+    min-width: 272px; min-height: 92px;
+    display: grid; place-items: center; overflow: hidden; touch-action: none;
+  }
+
+  /* Logo overlay (blue I, white rest, weight 400) */
+  .logo {
+    position: relative; z-index: 2;
+    font-family: "Fira Sans Extra Condensed", sans-serif;
+    font-weight: 400; letter-spacing: .5px; line-height: 1;
+    font-size: clamp(96px, 9vw, 100px);
+    user-select: none;
+    pointer-events: none;
+  }
+  .logo .i { color: #1a73e8; }
+  .logo .rest { color: #fff; }
+
+  canvas { position: absolute; inset: 0; z-index: 1; display: block; }
+
+  .hint {
+    position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+    z-index: 3; font: 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    color: #94a3b8; opacity: .9; white-space: nowrap; pointer-events: none;
+  }
+  @media (max-height: 110px) { .hint { display: none; } }
+</style>
+</head>
+<body>
+  <div id="stage" class="stage" aria-label="Procedural flowfield doodle. Move cursor to warp. Space to pause, N to reseed.">
+    <canvas id="art"></canvas>
+    <div class="logo" role="img" aria-label="Index logo">
+      <span class="i">I</span><span class="rest">ndex</span>
+    </div>
+    <div class="hint">Space: pause • N: new seed</div>
+  </div>
+
+<script>
+(() => {
+  const stage = document.getElementById('stage');
+  const canvas = document.getElementById('art');
+  const ctx = canvas.getContext('2d', { alpha: true });
+
+  let W = 0, H = 0, DPR = Math.min(2, window.devicePixelRatio || 1);
+  let particles = [];
+  let seed = Math.random() * 1000;
+  let t = 0;
+  let playing = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Settings (auto-tuned to container size)
+  let COUNT = 300;          // number of particles (rescaled on resize)
+  let SPEED = 0.9;          // base step per frame (px)
+  let SCALE = 0.006;        // noise scale
+  let FLOW = 2 * Math.PI;   // turns for angle mapping
+  const FADE = 0.045;       // trail fade (alpha subtracted each frame)
+  const WRAP_MARGIN = 6;
+
+  const mouse = { x: 0, y: 0, active: false };
+
+  function resize() {
+    const r = stage.getBoundingClientRect();
+    W = Math.max(1, Math.floor(r.width));
+    H = Math.max(1, Math.floor(r.height));
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = Math.floor(W * DPR);
+    canvas.height = Math.floor(H * DPR);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+    // Retune parameters for the current size
+    COUNT = Math.round(Math.max(140, Math.min(800, (W * H) * 0.010)));
+    SPEED = Math.max(0.6, Math.min(1.4, (Math.sqrt(W * H) / 1000) + 0.5));
+    SCALE = Math.max(0.004, Math.min(0.014, 0.008 * (272 / Math.max(W, 272))));
+
+    initParticles();
+    clearNow();
+  }
+
+  function clearNow() {
+    ctx.clearRect(0, 0, W, H);
+  }
+
+  function initParticles() {
+    particles = Array.from({ length: COUNT }, () => spawn());
+  }
+
+  function spawn() {
+    return {
+      x: Math.random() * W,
+      y: Math.random() * H,
+      px: null,
+      py: null,
+      hue: 200 + Math.random() * 40,        // blue -> cyan
+      alpha: 0.035 + Math.random() * 0.035, // faint stroke for glow
+      lw: Math.random() < 0.25 ? 1.2 : 0.8  // occasional brighter lines
+    };
+  }
+
+  // Smooth value noise (seeded), returns [-1, 1]
+  function noise2(x, y) {
+    const xi = Math.floor(x), yi = Math.floor(y);
+    const xf = x - xi,       yf = y - yi;
+    const u = fade(xf),      v = fade(yf);
+    const a = rand(xi, yi);
+    const b = rand(xi + 1, yi);
+    const c = rand(xi, yi + 1);
+    const d = rand(xi + 1, yi + 1);
+    const x1 = lerp(a, b, u);
+    const x2 = lerp(c, d, u);
+    return lerp(x1, x2, v) * 2 - 1;
+  }
+  function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function rand(x, y) {
+    // Deterministic hash -> [0,1)
+    const s = Math.sin((x * 127.1 + y * 311.7 + seed) * 0.015) * 43758.5453123;
+    return s - Math.floor(s);
+  }
+
+  function step() {
+    // Fade trails by subtracting alpha (destination-out)
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.fillStyle = `rgba(0,0,0,${FADE})`;
+    ctx.fillRect(0, 0, W, H);
+
+    // Draw light trails
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.lineCap = 'round';
+
+    const influenceR = Math.min(W, H) * 0.28;
+    const influenceR2 = influenceR * influenceR;
+    const mouseForce = 18;
+
+    for (let p of particles) {
+      const nx = p.x * SCALE + t * 0.05;
+      const ny = p.y * SCALE - t * 0.035;
+      const angle = noise2(nx, ny) * FLOW;
+
+      let vx = Math.cos(angle) * SPEED;
+      let vy = Math.sin(angle) * SPEED;
+
+      // Cursor warp (mild push away from cursor)
+      if (mouse.active) {
+        const dx = p.x - mouse.x;
+        const dy = p.y - mouse.y;
+        const d2 = dx*dx + dy*dy;
+        if (d2 < influenceR2 && d2 > 0.01) {
+          const f = (1 - d2 / influenceR2);
+          const inv = 1 / Math.sqrt(d2);
+          vx += (dx * inv) * mouseForce * f * 0.02;
+          vy += (dy * inv) * mouseForce * f * 0.02;
+        }
+      }
+
+      p.px = p.x; p.py = p.y;
+      p.x += vx; p.y += vy;
+
+      // Wrap around with margin
+      if (p.x < -WRAP_MARGIN) { p.x = W + WRAP_MARGIN; p.px = p.x; }
+      if (p.x > W + WRAP_MARGIN) { p.x = -WRAP_MARGIN; p.px = p.x; }
+      if (p.y < -WRAP_MARGIN) { p.y = H + WRAP_MARGIN; p.py = p.y; }
+      if (p.y > H + WRAP_MARGIN) { p.y = -WRAP_MARGIN; p.py = p.y; }
+
+      // Stroke
+      ctx.strokeStyle = `hsla(${p.hue}, 80%, 70%, ${p.alpha})`;
+      ctx.lineWidth = p.lw;
+      ctx.beginPath();
+      ctx.moveTo(p.px, p.py);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+    }
+
+    t += 0.006;
+  }
+
+  function loop() {
+    if (playing) step();
+    requestAnimationFrame(loop);
+  }
+
+
+  // Keys: Space = pause, N = reseed/new palette, R = reset positions
+  stage.tabIndex = 0;
+  stage.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') { e.preventDefault(); playing = !playing; }
+    else if (e.key === 'n' || e.key === 'N') { reseed(); }
+    else if (e.key === 'r' || e.key === 'R') { initParticles(); }
+  });
+
+  function reseed() {
+    seed = Math.random() * 1000 + 1;
+    // shift hues slightly
+    particles.forEach(p => p.hue = 200 + Math.random() * 40);
+    clearNow();
+  }
+
+  window.addEventListener('resize', resize);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { resize(); });
+  resize();
+  loop();
+})();
+</script>
+</body>
+</html>

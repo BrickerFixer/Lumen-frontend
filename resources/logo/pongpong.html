@@ -1,0 +1,204 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed:wght@400;700&display=swap');
+
+  :root { --blue:#1a73e8; --black:#fff; --muted:#5f6368; }
+  html, body { height:100%; margin:0; background:transparent; }
+  body { display:grid; place-items:center; }
+
+  .idxd {
+    position: relative; width: 100%; height: 100%;
+    min-width: 272px; min-height: 92px;
+    display: grid; place-items: center; overflow: hidden; user-select: none;
+  }
+  .idxd-logo {
+    position: relative; z-index: 2;
+    font-family: "Fira Sans Extra Condensed", sans-serif;
+    font-weight: 500; letter-spacing: .5px; line-height: 1;
+    font-size: clamp(96px, 9vw, 100px);
+  }
+  .idxd-i { color: var(--blue); display: inline-block; transform: translateX(0); transition: transform .1s ease, rotate .1s ease; }
+  .idxd-rest { color: var(--black); }
+
+  .idxd-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+  .idxd-score {
+    position: absolute; right: 6px; top: 6px; z-index: 3;
+    font: 12px/1 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    color: var(--muted); padding: 2px 6px; background: rgba(255,255,255,.85);
+    border-radius: 10px;
+  }
+  .idxd-hint {
+    position: absolute; bottom: 4px; z-index: 3;
+    font: 11px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color: #fff;
+  }
+</style>
+  <div id="idxdRoot" class="idxd" tabindex="0" aria-label="Index logo doodle. Press Space to play; arrows or drag to move the I.">
+    <div class="idxd-logo">
+      <span id="idxdI" class="idxd-i">I</span><span class="idxd-rest">ndex</span>
+    </div>
+    <canvas id="idxdCanvas" class="idxd-canvas" width="600" height="160" aria-hidden="true"></canvas>
+    <div id="idxdScore" class="idxd-score">Score 0</div>
+    <div class="idxd-hint">Space: play • drag the I</div>
+  </div>
+
+<script>
+(() => {
+  const root = document.getElementById("idxdRoot");
+  const iEl = document.getElementById("idxdI");
+  const canvas = document.getElementById("idxdCanvas");
+  const scoreEl = document.getElementById("idxdScore");
+  const ctx = canvas.getContext("2d");
+
+  let playing = false, rafId = 0, score = 0;
+  const ball = { x: 40, y: 30, vx: 2.2, vy: 1.3, r: 6 };
+
+  let baseLeft=0, baseRight=0, baseTop=0, baseWidth=0, baseHeight=0;
+  let iOffset = 0;
+
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+  function resize() {
+    const rect = root.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+    canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+    canvas.style.width = rect.width + "px";
+    canvas.style.height = rect.height + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    measureI();
+    applyI();
+  }
+
+  function measureI() {
+    const prev = iEl.style.transform;
+    iEl.style.transform = "translateX(0px)";
+    const rectLogo = root.getBoundingClientRect();
+    const rI = iEl.getBoundingClientRect();
+    baseLeft = rI.left - rectLogo.left;
+    baseRight = rectLogo.right - rI.right;
+    baseTop = rI.top - rectLogo.top;
+    baseWidth = rI.width;
+    baseHeight = rI.height;
+    iEl.style.transform = prev || "translateX(0px)";
+  }
+
+  function applyI() {
+    const leftLimit = -baseLeft;
+    const rightLimit = baseRight;
+    iOffset = clamp(iOffset, leftLimit, rightLimit);
+    iEl.style.transform = `translateX(${iOffset}px)`;
+  }
+
+  function start() {
+    playing = true;
+    score = 0;
+    scoreEl.textContent = "Score " + score;
+    const rect = root.getBoundingClientRect();
+    ball.x = clamp(rect.width * 0.35, 20, rect.width - 20);
+    ball.y = 20;
+    ball.vx = (Math.random()*2+1.2) * (Math.random()<0.5?-1:1);
+    ball.vy = 1.2;
+    loop();
+  }
+  function stop() { playing = false; cancelAnimationFrame(rafId); clearCanvas(); }
+  function toggle() { playing ? stop() : start(); }
+
+  function loop() { step(); draw(); rafId = requestAnimationFrame(loop); }
+
+  function step() {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    const gravity = 0.08;
+
+    ball.vy += gravity;
+    ball.x += ball.vx;
+    ball.y += ball.vy;
+
+    if (ball.x < ball.r) { ball.x = ball.r; ball.vx *= -1; }
+    if (ball.x > w - ball.r) { ball.x = w - ball.r; ball.vx *= -1; }
+    if (ball.y < ball.r) { ball.y = ball.r; ball.vy *= -1; }
+
+    if (ball.y > h - ball.r) {
+      ball.y = h - ball.r; ball.vy *= -0.8;
+      score = Math.max(0, score - 1);
+      scoreEl.textContent = "Score " + score;
+      flash("#fde68a");
+    }
+
+    const paddle = { x: baseLeft + iOffset, y: baseTop, w: baseWidth, h: baseHeight };
+    if (circleRect(ball.x, ball.y, ball.r, paddle)) {
+      const rel = (ball.x - paddle.x) / paddle.w - 0.5; // -0.5..0.5
+      ball.vy = -Math.abs(ball.vy) - 1.1;
+      ball.vx += rel * 2.0;
+      score += 1;
+      scoreEl.textContent = "Score " + score;
+      wobbleI(rel);
+      flash("#e0f2fe");
+    }
+  }
+
+  function circleRect(cx, cy, cr, r) {
+    const tx = Math.max(r.x, Math.min(cx, r.x + r.w));
+    const ty = Math.max(r.y, Math.min(cy, r.y + r.h));
+    const dx = cx - tx, dy = cy - ty;
+    return dx*dx + dy*dy <= cr*cr;
+  }
+
+  function clearCanvas() { ctx.clearRect(0,0,canvas.width,canvas.height); }
+  function draw() {
+    clearCanvas();
+    ctx.beginPath();
+    ctx.fillStyle = "#0ea5e9";
+    ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(0,0,0,.08)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.clientHeight - 0.5);
+    ctx.lineTo(canvas.clientWidth, canvas.clientHeight - 0.5);
+    ctx.stroke();
+  }
+
+  function wobbleI(dir) {
+    iEl.style.rotate = (dir * 4) + "deg";
+    clearTimeout(wobbleI._t);
+    wobbleI._t = setTimeout(() => iEl.style.rotate = "0deg", 100);
+    const c = iEl.style.color;
+    iEl.style.color = "#0ea5e9";
+    setTimeout(()=> iEl.style.color = c, 90);
+  }
+
+  let flashT;
+  function flash(color) {
+    root.style.boxShadow = `inset 0 0 0 6px ${color}`;
+    clearTimeout(flashT);
+    flashT = setTimeout(()=> root.style.boxShadow = "", 120);
+  }
+
+  // Controls
+  root.addEventListener("keydown", (e) => {
+    if (e.code === "Space") { e.preventDefault(); toggle(); }
+  });
+  root.addEventListener("pointerdown", (e) => { root.setPointerCapture(e.pointerId); drag(e); });
+  root.addEventListener("pointermove", drag);
+  function drag(e) {
+    if (e.pressure === 0 && e.buttons === 0) return;
+    const rect = root.getBoundingClientRect();
+    const target = e.clientX - rect.left;
+    iOffset = target - (baseLeft + baseWidth/2);
+    applyI();
+  }
+
+  // Setup
+  function init() {
+    resize();
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => { resize(); });
+    }
+    root.focus();
+  }
+  window.addEventListener("resize", resize);
+  document.addEventListener("visibilitychange", () => { if (document.hidden && playing) stop(); });
+  init();
+})();
+</script>

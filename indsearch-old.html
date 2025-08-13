@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <title>Frontend results reference</title>
+  <link rel="stylesheet" href="/critical.css"> 
+  <link rel="stylesheet" href="/suggest2.css">
+  <link rel="stylesheet" href="/islands_general.css">
+  <link rel="stylesheet" href="/critical_mobile.css" media="only screen and (max-width: 700px)">
+  
+</head>
+<body class="b-page b-page-layout__rows b-page_theme_head_light b-page_theme_content_light">
+<div class="layout header header_table_close">
+    <div class="b-line b-line_header">
+      <div class="header__main">
+        <!-- Left side (logo) -->
+        <div class="layout__col">
+          <div class="personal">
+            <div class="group">
+              <div class="personal__item">
+                <a href="/"><img src="resources/service-icons/mini-islands.png" class="personal__item-icon personal__item-icon_height_56"/></a>
+              </div>
+              <div class="personal__gap"></div>
+              <div class="personal__item header__search">
+                  <div class="arrow-search">
+                      <form class="search suggest2-form suggest2-counter search_suggest_yes " id="searchForm"><input type="hidden" name="lr" value="90"/>
+                        <table class="search__table suggest2-form__node">
+                          <tr class="search__row">
+                            <td class="search__cell search__input">
+                              <span class="input suggest2-form__input input_size_m input_theme_normal input_ahead_yes input_keyboard_yes">
+                                <span class="input__box">
+                                  <input class="input__control input__input searchInput" id="searchInput" tabindex="1" autocomplete="no" maxlength="400" name="text" required />
+                                </span>
+                              </span>
+                            </td>
+                            <td class="search__cell search__button">
+                              <button class="button-secondary button suggest2-form__button button_size_m" role="button" tabindex="2" type="submit"><span class="button__text">Go</span></button>
+                            </td>
+                          </tr>
+                        </table>
+                      </form>
+                  </div>
+              </div>
+            </div>
+            <div class="group">
+              <div class="personal__item">
+                <input type="text" id="nodeAddress" value="http://localhost:3000"/>
+              </div>
+                <a class="personal__item header__action header__action_type_fil">
+                  <i class="header__action-i"></i>
+                </a>
+                <a class="personal__item header__action header__action_type_srv">
+                  <i class="header__action-i"></i>
+                </a>
+            </div>
+          </div>
+          <div id="filters-strip" style="display:none;gap:10px;align-items:center;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="background-container">
+    <div class="bg-image"></div>
+  </div>
+  <div class="b-page-layout">
+    <div class="main main_type_2-auto layout layout_type_serp serp ">
+        <div class="main__left main__left_size_2 layout__col layout__col_size_2">
+            <div class="navigation serp " id="methodSidebar">
+                <!-- Method sidebar will be rendered here -->
+            </div>
+        </div>
+        <div class="main__right layout__col">
+            <div class="main__right-inner">
+                <div class="main__content">
+                    <div class="content layout layout_type_serp favicons ">
+                        <div class="content__left content__left_size_9 layout__col layout__col_size_9">
+                            <div class="serp-list" id="results">
+                                <!-- Results will be rendered here -->
+                            </div>
+                        </div>
+                        <div class="content__right content__right_size_9 layout__col layout__col_size_9">
+                            <!-- Right sidebar for context-supporting blocks (ex. misspell suggestion, knowledge, read more) -->
+                             <div class="serp-list" id="supporting_column">
+                                <!-- Results will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+<script>
+let methods = [];
+let selectedMethod = null;
+let methodCapabilities = {};
+let currentPage = 1;
+let filterValues = {};
+
+async function fetchMethods() {
+  const node = document.getElementById('nodeAddress').value.trim();
+  const res = await fetch(node + '/metadata');
+  const data = await res.json();
+  methods = data.methods || [];
+  methodCapabilities = data.methodCapabilities || {};
+  renderMethods();
+  if (!selectedMethod && methods.length) {
+    selectMethod(methods[0]);
+  }
+}
+
+function renderMethods() {
+  const sidebar = document.getElementById('methodSidebar');
+  if (!sidebar) return;
+  sidebar.innerHTML = '';
+  methods.forEach((method, idx) => {
+    const div = document.createElement('div');
+    div.className = 'navigation__item navigation__item_service_yes navigation__item_name_www' + (method === selectedMethod ? ' navigation__item_state_selected' : '');
+    div.onclick = () => selectMethod(method);
+    div.innerHTML = `
+      <div class="service service${method === selectedMethod ? '' : ' service_hoverable_yes'} service_name_www">
+        <div class="service__icon service__icon_self_40 service-icon__www service-icon__www_self_40"></div>
+        <div class="service__name">${method.charAt(0).toUpperCase() + method.slice(1)}</div>
+      </div>
+    `;
+    sidebar.appendChild(div);
+  });
+}
+
+function renderPagination() {
+  const paginationDiv = document.getElementById('pagination');
+  if (!paginationDiv) return;
+  paginationDiv.innerHTML = '';
+  if (!selectedMethod || !methodCapabilities[selectedMethod] || !methodCapabilities[selectedMethod].pagination) {
+    paginationDiv.style.display = 'none';
+    return;
+  }
+  paginationDiv.style.display = 'block';
+  const pageParam = methodCapabilities[selectedMethod].pageParam || 'p';
+  const maxPage = methodCapabilities[selectedMethod].maxPage || 100;
+  const prevBtn = document.createElement('button');
+  prevBtn.type = 'button';
+  prevBtn.textContent = 'Previous';
+  prevBtn.disabled = currentPage <= 1;
+  prevBtn.onclick = function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (currentPage > 1) {
+      currentPage--;
+      document.getElementById('searchForm').dispatchEvent(new Event('submit', {cancelable: true, bubbles: false}));
+    }
+  };
+  const nextBtn = document.createElement('button');
+  nextBtn.type = 'button';
+  nextBtn.textContent = 'Next';
+  nextBtn.disabled = currentPage >= maxPage;
+  nextBtn.onclick = function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (currentPage < maxPage) {
+      currentPage++;
+      document.getElementById('searchForm').dispatchEvent(new Event('submit', {cancelable: true, bubbles: false}));
+    }
+  };
+  const pageInfo = document.createElement('span');
+  pageInfo.textContent = `Page ${currentPage} of ${maxPage}`;
+  paginationDiv.appendChild(prevBtn);
+  paginationDiv.appendChild(pageInfo);
+  paginationDiv.appendChild(nextBtn);
+}
+
+function renderFilters() {
+  const filtersDiv = document.getElementById('filters-strip');
+  filtersDiv.innerHTML = '';
+  if (!selectedMethod || !methodCapabilities[selectedMethod] || !Array.isArray(methodCapabilities[selectedMethod].filters)) {
+    filtersDiv.style.display = 'none';
+    return;
+  }
+  filtersDiv.style.display = 'flex';
+  const filters = methodCapabilities[selectedMethod].filters;
+  filters.forEach(filter => {
+    const filterLabel = document.createElement('label');
+    filterLabel.style.marginRight = '12px';
+    filterLabel.style.display = 'flex';
+    filterLabel.style.alignItems = 'center';
+    filterLabel.title = filter.description || '';
+    filterLabel.innerHTML = `<span style='margin-right:4px;'>${filter.name}:</span>`;
+    let input;
+    if (Array.isArray(filter.choices)) {
+      input = document.createElement('select');
+      filter.choices.forEach(choice => {
+        const opt = document.createElement('option');
+        opt.value = choice;
+        opt.textContent = choice;
+        input.appendChild(opt);
+      });
+      input.value = (filterValues[filter.name] !== undefined) ? filterValues[filter.name] : filter.default;
+    } else {
+      input = document.createElement('input');
+      input.type = 'text';
+      input.value = (filterValues[filter.name] !== undefined) ? filterValues[filter.name] : (filter.default !== undefined ? filter.default : '');
+      input.style.width = '90px';
+    }
+    input.onchange = function() {
+      filterValues[filter.name] = input.value;
+    };
+    filterLabel.appendChild(input);
+    filtersDiv.appendChild(filterLabel);
+  });
+}
+
+function restoreDefaultResultsLayout() {
+  const mainDiv = document.querySelector('.content__left');
+  if (mainDiv) {
+    mainDiv.innerHTML = `<div class='serp-list' id='results'></div>`;
+  }
+}
+
+function selectMethod(method) {
+  selectedMethod = method;
+  currentPage = 1;
+  renderMethods();
+  restoreDefaultResultsLayout();
+  renderPagination();
+  renderFilters();
+}
+
+document.getElementById('nodeAddress').onchange = function() {
+  selectedMethod = null;
+  fetchMethods();
+  restoreDefaultResultsLayout();
+};
+
+document.getElementById('searchForm').onsubmit = async function(e) {
+  e.preventDefault();
+  restoreDefaultResultsLayout();
+  const resultsMain = document.getElementById('results');
+  const query = document.getElementById('searchInput').value.trim();
+  if (!query || !selectedMethod) return;
+  if (resultsMain) resultsMain.innerHTML = '<em>Searching...</em>';
+  const node = document.getElementById('nodeAddress').value.trim();
+  let body = { query, method: selectedMethod };
+  // Always use rankingPreferences for pagination and filters
+  let rankingPreferences = {};
+  if (methodCapabilities[selectedMethod] && methodCapabilities[selectedMethod].pagination) {
+    const pageParam = methodCapabilities[selectedMethod].pageParam || 'p';
+    rankingPreferences[pageParam] = currentPage;
+  }
+  // Add filters to rankingPreferences
+  if (methodCapabilities[selectedMethod] && Array.isArray(methodCapabilities[selectedMethod].filters)) {
+    methodCapabilities[selectedMethod].filters.forEach(filter => {
+      if (filterValues[filter.name] !== undefined && filterValues[filter.name] !== '') {
+        rankingPreferences[filter.name] = filterValues[filter.name];
+      } else if (filter.default !== undefined) {
+        rankingPreferences[filter.name] = filter.default;
+      }
+    });
+  }
+  if (Object.keys(rankingPreferences).length > 0) {
+    body.rankingPreferences = rankingPreferences;
+  }
+  try {
+    const res = await fetch(node + '/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    // Update currentPage from response meta if present
+    if (data.meta && typeof data.meta.page === 'number') {
+      currentPage = data.meta.page;
+    }
+    renderPagination();
+    // Show custom HTML layout if provided, otherwise show default answers list
+    const html = (typeof data.html === 'string' && data.html.trim()) ? data.html : null;
+    if (html) {
+      if (resultsMain) resultsMain.innerHTML = html;
+    } else {
+      const answers = data.answers || [];
+      // Render islands in the correct columns if present
+      let mainIslandsHtml = '';
+      if (Array.isArray(data.islands) && data.islands.length) {
+        // Supporting (right) column
+        const rightCol = document.getElementById('supporting_column');
+        if (rightCol) {
+          rightCol.innerHTML = data.islands
+            .filter(island => island.column === 'supporting' && typeof island.html === 'string')
+            .map(island => `
+              <div class="serp-block">
+                <div class="serp-block__head">
+                  <div class="serp-block__head-wrap">${island.name || ''}</div>
+                </div>
+                <div class="serp-item">
+                  <div class="island island-interactive i-clearfix">
+                    ${island.html}
+                  </div>
+                </div>
+              </div>
+            `)
+            .join('');
+        }
+        // Main (left) column, before results
+        mainIslandsHtml = data.islands
+          .filter(island => island.column === 'main' && typeof island.html === 'string')
+          .map(island => `
+            <div class="serp-block">
+              <div class="serp-block__head">
+                <div class="serp-block__head-wrap">${island.name || ''}</div>
+              </div>
+              <div class="serp-item">
+                <div class="island island-interactive i-clearfix">
+                  ${island.html}
+                </div>
+              </div>
+            </div>
+          `)
+          .join('');
+      } else {
+        // Clear right column if no supporting islands
+        const rightCol = document.getElementById('supporting_column');
+        if (rightCol) rightCol.innerHTML = '';
+      }
+      // Group results by domain and render each group in its own serp-block
+      let lastDomain = null;
+      let html = '';
+      answers.forEach((a, i) => {
+        const isNewDomain = a.domain !== lastDomain;
+        if (isNewDomain) {
+          html += `<div class="serp-block">`;
+        }
+        html += `
+          <div class="serp-item serp-item_plain_yes  ">
+            <div class="serp-item__wrap island i-clearfix">
+              <h2 class="serp-item__title">
+                <a class="serp-item__title-link b-link" href="${a.url}" target="_blank">
+                  ${highlightKeyword(a.name, query)}
+                </a>
+              </h2>
+              <div class="serp-item__greenurl serp-url">
+                <a class="serp-url__link" target="_blank">${a.domain}</a>
+              </div>
+              <div class="serp-item__text">${highlightKeyword(a.snippet || '', query)}</div>
+            </div>
+          </div>
+        `;
+        // If next result is a new domain or this is the last result, close the group
+        const next = answers[i + 1];
+        if (!next || next.domain !== a.domain) {
+          html += '</div>';
+        }
+        lastDomain = a.domain;
+      });
+      if (resultsMain) resultsMain.innerHTML = mainIslandsHtml + html;
+      // Islands and error handling can be added here if needed
+    }
+  } catch (err) {
+    restoreDefaultResultsLayout();
+    const resultsMain = document.getElementById('results');
+    if (resultsMain) resultsMain.innerHTML = `<div class='error'>${err.message}</div>`;
+    renderPagination();
+  }
+};
+
+function highlightKeyword(text, keyword) {
+  if (!keyword) return text;
+  const safe = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return text.replace(new RegExp(`(${safe})`, 'gi'), '<b>$1</b>');
+}
+
+// --- Search Suggestions UI ---
+// Add suggestions container after searchInput
+// (This should be placed in the HTML, but we'll inject it for now)
+window.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('searchInput');
+  if (!searchInput) return;
+  let suggestionsDiv = document.getElementById('suggestions');
+  if (!suggestionsDiv) {
+    suggestionsDiv = document.createElement('div');
+    suggestionsDiv.id = 'suggestions';
+    suggestionsDiv.className = 'suggestions-list';
+    suggestionsDiv.style.display = 'none';
+    suggestionsDiv.style.position = 'absolute';
+    suggestionsDiv.style.left = '0';
+    suggestionsDiv.style.right = '0';
+    suggestionsDiv.style.top = '100%';
+    suggestionsDiv.style.zIndex = '100';
+    searchInput.parentElement.appendChild(suggestionsDiv);
+    searchInput.parentElement.style.position = 'relative';
+  }
+
+  let suggestions = [];
+  let selectedIdx = -1;
+  let debounceTimeout = null;
+  let lastFetchId = 0;
+
+  async function fetchSuggestions(query) {
+    if (!query) return [];
+    const node = document.getElementById('nodeAddress').value.trim();
+    try {
+      const res = await fetch(node + '/suggest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ partial: query })
+      });
+      if (!res.ok) return [];
+      const data = await res.json();
+      if (Array.isArray(data.suggestions)) return data.suggestions;
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function showSuggestions(list) {
+    suggestionsDiv.innerHTML = '';
+    if (!list.length) {
+      suggestionsDiv.style.display = 'none';
+      return;
+    }
+    list.forEach((s, i) => {
+      const item = document.createElement('div');
+      item.className = 'suggestion-item' + (i === selectedIdx ? ' selected' : '');
+      item.textContent = s;
+      item.onclick = function() {
+        searchInput.value = s;
+        suggestionsDiv.style.display = 'none';
+        searchInput.focus();
+      };
+      suggestionsDiv.appendChild(item);
+    });
+    suggestionsDiv.style.display = 'block';
+  }
+
+  searchInput.addEventListener('input', function(e) {
+    const val = searchInput.value.trim();
+    selectedIdx = -1;
+    if (debounceTimeout) clearTimeout(debounceTimeout);
+    if (!val) {
+      suggestions = [];
+      showSuggestions([]);
+      return;
+    }
+    const fetchId = ++lastFetchId;
+    debounceTimeout = setTimeout(async () => {
+      const sugg = await fetchSuggestions(val);
+      if (fetchId !== lastFetchId) return; // Only show latest
+      suggestions = sugg;
+      showSuggestions(suggestions);
+    }, 180);
+  });
+
+  searchInput.addEventListener('keydown', function(e) {
+    if (!suggestions.length || suggestionsDiv.style.display === 'none') return;
+    if (e.key === 'ArrowDown') {
+      selectedIdx = (selectedIdx + 1) % suggestions.length;
+      showSuggestions(suggestions);
+      e.preventDefault();
+    } else if (e.key === 'ArrowUp') {
+      selectedIdx = (selectedIdx - 1 + suggestions.length) % suggestions.length;
+      showSuggestions(suggestions);
+      e.preventDefault();
+    } else if (e.key === 'Enter') {
+      if (selectedIdx >= 0 && selectedIdx < suggestions.length) {
+        searchInput.value = suggestions[selectedIdx];
+        suggestionsDiv.style.display = 'none';
+        e.preventDefault();
+      }
+    } else if (e.key === 'Escape') {
+      suggestionsDiv.style.display = 'none';
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!suggestionsDiv.contains(e.target) && e.target !== searchInput) {
+      suggestionsDiv.style.display = 'none';
+    }
+  });
+});
+// --- End Search Suggestions UI ---
+
+fetchMethods();
+</script>
+<div id="pagination" style="text-align:center;margin:20px 0;"></div>
+</body>
+</html>

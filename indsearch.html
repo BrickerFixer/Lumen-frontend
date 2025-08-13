@@ -1,487 +1,1188 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <title>Frontend results reference</title>
-  <link rel="stylesheet" href="/critical.css"> 
-  <link rel="stylesheet" href="/suggest2.css">
-  <link rel="stylesheet" href="/islands_general.css">
-  <link rel="stylesheet" href="/critical_mobile.css" media="only screen and (max-width: 700px)">
-  
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Index — Search</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #0f1115;
+      --muted: #6b7177;
+      --hair: #e5e7eb;
+      --acc: #92BAC2;
+      --railW: 96px;
+      --colW: 556px;
+      --hdr-h: 60px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1115;
+        --fg: #f3f4f6;
+        --muted: #9aa3aa;
+        --hair: #1f2428;
+        --acc: #B8EAF5;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font: 15px/1.45 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+
+    /* Header (same component as home, transforms to show filters/fastlane) */
+    .hdr {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: var(--bg);
+      border-bottom: 1px solid var(--hair);
+      overflow: hidden;
+      transition: height .25s ease;
+      height: var(--hdr-h);
+      min-height: 56px;
+    }
+
+    .hdr-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 8px 16px;
+      display: grid;
+      grid-template-rows: 60px auto auto;
+    }
+
+    .bar {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      height: 60px;
+    }
+
+    .logo-img {
+      height: 50px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .q {
+      height: 40px;
+      border: 2px solid var(--acc);
+      background: var(--bg);
+      color: var(--fg);
+      padding: 0 12px;
+      font: 15px/1.2 inherit;
+      outline: none;
+      width: 100%;
+    }
+
+    .icon-btn {
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: var(--fg);
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    .icon {
+      width: 24px;
+      height: 24px;
+      display: block;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(2, auto);
+      gap: 8px;
+      align-items: center;
+      padding: 8px 0 10px;
+      border-top: 1px solid var(--hair);
+    }
+
+    .filters.hidden {
+      display: none;
+    }
+
+    .sel {
+      height: 34px;
+      border: 2px solid var(--hair);
+      background: var(--bg);
+      color: var(--fg);
+      padding: 0 8px;
+      font: 14px/1.2 inherit;
+    }
+
+    .flt-input {
+      height: 34px;
+      border: 2px solid var(--hair);
+      background: var(--bg);
+      color: var(--fg);
+      padding: 0 8px;
+      font: 14px/1.2 inherit;
+      width: 120px;
+    }
+
+    .fastlane {
+      padding: 12px 0 16px;
+      border-top: 1px solid var(--hair);
+      display: none;
+    }
+
+    .fastlane.open {
+      display: block;
+    }
+
+    .fl-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .fl-item {
+      border: 1px solid var(--hair);
+      padding: 18px 8px;
+      text-align: center;
+      user-select: none;
+      cursor: pointer;
+    }
+
+    .fl-item .ico {
+      width: 20px;
+      height: 20px;
+      margin: 0 auto 8px;
+      border: 2px solid var(--acc);
+    }
+
+    .fl-item span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .hdr.is-filters {
+      height: calc(var(--hdr-h) + 60px);
+    }
+
+    .hdr.is-fastlane {
+      height: calc(var(--hdr-h) + 260px);
+    }
+
+    /* Page grid */
+    .page {
+      margin: 12px auto;
+      padding: 0 16px;
+      display: grid;
+      grid-template-columns: var(--railW) minmax(0, var(--colW)) minmax(0, var(--colW));
+      gap: 16px;
+    }
+
+    /* Types rail: icon top, label bottom */
+    .types {
+      position: sticky;
+      top: calc(var(--hdr-h) + 12px);
+      align-self: start;
+    }
+
+    .type {
+      display: grid;
+      place-items: center;
+      gap: 6px;
+      padding: 10px;
+      text-decoration: none;
+      color: var(--fg);
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .type .ico {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--hair);
+    }
+
+    .type .lbl {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .type[aria-current="page"] {
+      border-color: var(--acc);
+    }
+
+    .type[aria-current="page"] .ico {
+      border-color: var(--acc);
+      background: var(--acc);
+    }
+
+    .type[aria-current="page"] .lbl {
+      color: var(--fg);
+    }
+
+    /* Columns */
+    .main {
+      min-width: 0;
+    }
+
+    /* Island cards */
+    .island {
+      border: 1px solid var(--hair);
+      background: var(--bg);
+      margin-bottom: 12px;
+    }
+
+    .island .head {
+      font-size: 12px;
+      color: var(--muted);
+      padding: 8px 8px 8px 8px;
+      width: 100%;
+      border-bottom: 1px solid var(--hair);
+    }
+
+    /* quiet, part of the card */
+    .island .inner {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 12px;
+    }
+
+    .thumb {
+      width: 140px;
+      height: 92px;
+      object-fit: cover;
+      display: block;
+      background: #dfe3e6;
+    }
+
+    .title {
+      font-size: 17px;
+      margin: 0 0 4px;
+      font-weight: 600;
+    }
+
+    .meta {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .chip {
+      border: 1px solid var(--hair);
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+
+    /* Results */
+    .results-group {
+      margin-top: 8px;
+      border-top: 1px solid var(--hair);
+      border-left: 1px solid var(--hair);
+      border-right: 1px solid var(--hair);
+    }
+    /* Reset defaults for the first group */
+    #results .results-group {
+        margin-top: 0;
+        border-top: 0;
+        border-top: 1px solid var(--hair);
+    }
+
+    /* Only add spacing/border between consecutive groups */
+    #results .results-group + .results-group {
+        margin-top: 8px;
+        border-top: 1px solid var(--hair);
+    }
+
+    .result {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--hair);
+      padding-left: 16px;
+    }
+
+    .result a {
+      color: var(--fg);
+      text-decoration: none;
+    }
+
+    .result a:hover {
+      text-decoration: underline;
+    }
+
+    .url {
+      color: var(--muted);
+      font-size: 12px;
+      margin: 2px 0 4px;
+      word-break: break-all;
+    }
+
+    .pager {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      margin: 10px 0 20px;
+      justify-content: center;
+    }
+
+    .btn {
+      border: 1px solid var(--hair);
+      background: var(--bg);
+      color: var(--fg);
+      padding: 6px 8px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn[disabled] {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    /* Suggestions */
+    .search {
+      width: 100%;
+      position: relative;
+    }
+
+    .search-table {
+      display: flex;
+      width: 100%;
+      height: 40px;
+    }
+
+    .suggestions-list {
+        background: var(--bg);
+        border: 1px solid var(--hair);
+        z-index: 9999;
+        display: none;
+        max-height: 240px;
+        overflow-y: auto;
+    }
+
+    .suggestion-item {
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+
+    .suggestion-item:hover,
+    .suggestion-item.selected {
+      background: var(--hair);
+    }
+
+    /* Responsive */
+    @media (max-width: 1080px) {
+      :root {
+        --asideW: 300px;
+      }
+    }
+
+    @media (max-width: 940px) {
+      .page {
+        grid-template-columns: var(--railW) 1fr;
+      }
+
+      .aside {
+        display: none;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
+
+      .types {
+        position: static;
+        display: flex;
+        gap: 6px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+      }
+
+      .type {
+        margin: 0;
+        width: 100px;
+      }
+
+      .island .inner {
+        grid-template-columns: 1fr;
+      }
+
+      .thumb {
+        width: 100%;
+        height: 140px;
+      }
+
+      .suggestions-list {
+        right: 0;
+      }
+    }
+
+    .bar-search-button {
+      height: 100%;
+      width: 96px;
+      background: var(--acc);
+      border: none;
+      cursor: pointer;
+    }
+
+    .bar-param-button {
+      height: 100%;
+      background: var(--acc);
+      border: none;
+    }
+    .island-interactive > h1 {
+    font-weight: 200;
+    margin-top: 16px;
+    margin-bottom: 16px;
+}
+
+  </style>
 </head>
-<body class="b-page b-page-layout__rows b-page_theme_head_light b-page_theme_content_light">
-<div class="layout header header_table_close">
-    <div class="b-line b-line_header">
-      <div class="header__main">
-        <!-- Left side (logo) -->
-        <div class="layout__col">
-          <div class="personal">
-            <div class="group">
-              <div class="personal__item">
-                <a href="/"><img src="resources/service-icons/mini-islands.png" class="personal__item-icon personal__item-icon_height_56"/></a>
-              </div>
-              <div class="personal__gap"></div>
-              <div class="personal__item header__search">
-                  <div class="arrow-search">
-                      <form class="search suggest2-form suggest2-counter search_suggest_yes " id="searchForm"><input type="hidden" name="lr" value="90"/>
-                        <table class="search__table suggest2-form__node">
-                          <tr class="search__row">
-                            <td class="search__cell search__input">
-                              <span class="input suggest2-form__input input_size_m input_theme_normal input_ahead_yes input_keyboard_yes">
-                                <span class="input__box">
-                                  <input class="input__control input__input searchInput" id="searchInput" tabindex="1" autocomplete="no" maxlength="400" name="text" required />
-                                </span>
-                              </span>
-                            </td>
-                            <td class="search__cell search__button">
-                              <button class="button-secondary button suggest2-form__button button_size_m" role="button" tabindex="2" type="submit"><span class="button__text">Go</span></button>
-                            </td>
-                          </tr>
-                        </table>
-                      </form>
-                  </div>
-              </div>
-            </div>
-            <div class="group">
-              <div class="personal__item">
-                <input type="text" id="nodeAddress" value="http://localhost:3000"/>
-              </div>
-                <a class="personal__item header__action header__action_type_fil">
-                  <i class="header__action-i"></i>
-                </a>
-                <a class="personal__item header__action header__action_type_srv">
-                  <i class="header__action-i"></i>
-                </a>
-            </div>
+
+<body>
+  <header id="hdr" class="hdr" style="--hdr-h:72px">
+    <div class="hdr-inner">
+      <div class="bar">
+        <a href="/" aria-label="Index home">
+          <img class="logo-img" src="resources/service-icons/mini-mini.png" alt="Index">
+        </a>
+
+        <div class="search-table">
+          <form class="search" id="searchForm" autocomplete="off">
+            <input class="q" id="q" name="q" type="search" placeholder="Search the index" autofocus />
+            <div id="suggestions" class="suggestions-list" aria-label="Suggestions"></div>
+          </form>
+          <button id="goBtn" class="bar-search-button" type="button">Go</button>
+        </div>
+
+        <div style="display:flex; gap:8px;">
+          <button id="filtersBtn" class="icon-btn" aria-label="Filters">
+            <img class="icon" src="resources/svg/tune_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg">
+          </button>
+          <button id="fastlaneBtn" class="icon-btn" aria-label="Fastlane">
+            <img class="icon" src="resources/svg/dashboard_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg">
+          </button>
+        </div>
+      </div>
+
+      <div id="filtersRow" class="filters hidden" aria-hidden="true">
+        <!-- Dynamic filters will be rendered here -->
+      </div>
+
+      <div id="fastlane" class="fastlane" aria-hidden="true">
+        <div class="fl-grid">
+          <div class="fl-item">
+            <div class="ico"></div><span>Web</span>
           </div>
-          <div id="filters-strip" style="display:none;gap:10px;align-items:center;"></div>
+          <div class="fl-item">
+            <div class="ico"></div><span>Images</span>
+          </div>
+          <div class="fl-item">
+            <div class="ico"></div><span>Video</span>
+          </div>
+          <div class="fl-item">
+            <div class="ico"></div><span>Maps</span>
+          </div>
+          <div class="fl-item">
+            <div class="ico"></div><span>News</span>
+          </div>
+          <div class="fl-item">
+            <div class="ico"></div><span>Translate</span>
+          </div>
+          <div class="fl-item">
+            <div class="ico"></div><span>Mail</span>
+          </div>
+          <div class="fl-item">
+            <div class="ico"></div><span>Docs</span>
+          </div>
+          <div class="fl-item">
+            <div class="ico"></div><span>Settings</span>
+          </div>
+          <div class="fl-item">
+            <div class="ico"></div><span>Profile</span>
+          </div>
+          <div class="fl-item">
+            <div class="ico"></div><span>Shortcuts</span>
+          </div>
+          <div class="fl-item">
+            <div class="ico"></div><span>Labs</span>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="background-container">
-    <div class="bg-image"></div>
-  </div>
-  <div class="b-page-layout">
-    <div class="main main_type_2-auto layout layout_type_serp serp ">
-        <div class="main__left main__left_size_2 layout__col layout__col_size_2">
-            <div class="navigation serp " id="methodSidebar">
-                <!-- Method sidebar will be rendered here -->
-            </div>
-        </div>
-        <div class="main__right layout__col">
-            <div class="main__right-inner">
-                <div class="main__content">
-                    <div class="content layout layout_type_serp favicons ">
-                        <div class="content__left content__left_size_9 layout__col layout__col_size_9">
-                            <div class="serp-list" id="results">
-                                <!-- Results will be rendered here -->
-                            </div>
-                        </div>
-                        <div class="content__right content__right_size_9 layout__col layout__col_size_9">
-                            <!-- Right sidebar for context-supporting blocks (ex. misspell suggestion, knowledge, read more) -->
-                             <div class="serp-list" id="supporting_column">
-                                <!-- Results will be rendered here -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-  </div>
-<script>
-let methods = [];
-let selectedMethod = null;
-let methodCapabilities = {};
-let currentPage = 1;
-let filterValues = {};
+  </header>
 
-async function fetchMethods() {
-  const node = document.getElementById('nodeAddress').value.trim();
-  const res = await fetch(node + '/metadata');
-  const data = await res.json();
-  methods = data.methods || [];
-  methodCapabilities = data.methodCapabilities || {};
-  renderMethods();
-  if (!selectedMethod && methods.length) {
-    selectMethod(methods[0]);
-  }
-}
+  <main class="page">
+    <!-- Sidebar: dynamically filled with methods -->
+    <nav id="typesNav" class="types" aria-label="Search types">
+      <!-- Methods will be rendered here -->
+    </nav>
 
-function renderMethods() {
-  const sidebar = document.getElementById('methodSidebar');
-  if (!sidebar) return;
-  sidebar.innerHTML = '';
-  methods.forEach((method, idx) => {
-    const div = document.createElement('div');
-    div.className = 'navigation__item navigation__item_service_yes navigation__item_name_www' + (method === selectedMethod ? ' navigation__item_state_selected' : '');
-    div.onclick = () => selectMethod(method);
-    div.innerHTML = `
-      <div class="service service${method === selectedMethod ? '' : ' service_hoverable_yes'} service_name_www">
-        <div class="service__icon service__icon_self_40 service-icon__www service-icon__www_self_40"></div>
-        <div class="service__name">${method.charAt(0).toUpperCase() + method.slice(1)}</div>
-      </div>
-    `;
-    sidebar.appendChild(div);
-  });
-}
+    <!-- Main column: dynamic islands + results -->
+    <section id="main" class="main" aria-label="Main results">
+      <div id="mainIslands"></div>
+      <div id="results"></div>
+      <div id="pager" class="pager" style="display:none;"></div>
+    </section>
 
-function renderPagination() {
-  const paginationDiv = document.getElementById('pagination');
-  if (!paginationDiv) return;
-  paginationDiv.innerHTML = '';
-  if (!selectedMethod || !methodCapabilities[selectedMethod] || !methodCapabilities[selectedMethod].pagination) {
-    paginationDiv.style.display = 'none';
-    return;
-  }
-  paginationDiv.style.display = 'block';
-  const pageParam = methodCapabilities[selectedMethod].pageParam || 'p';
-  const maxPage = methodCapabilities[selectedMethod].maxPage || 100;
-  const prevBtn = document.createElement('button');
-  prevBtn.type = 'button';
-  prevBtn.textContent = 'Previous';
-  prevBtn.disabled = currentPage <= 1;
-  prevBtn.onclick = function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (currentPage > 1) {
-      currentPage--;
-      document.getElementById('searchForm').dispatchEvent(new Event('submit', {cancelable: true, bubbles: false}));
+    <!-- Misc/supporting islands -->
+    <aside id="supportingIslands" class="aside" aria-label="Related">
+      <!-- Supporting islands will be rendered here -->
+    </aside>
+  </main>
+
+  <script>
+    // Header toggle logic (kept)
+    const hdr = document.getElementById('hdr');
+    const filtersBtn = document.getElementById('filtersBtn');
+    const fastlaneBtn = document.getElementById('fastlaneBtn');
+    const filtersRow = document.getElementById('filtersRow');
+    const fastlane = document.getElementById('fastlane');
+    let filtersOpen = false;
+    let fastlaneOpen = false;
+
+    function applyHeaderState() {
+      hdr.classList.toggle('is-filters', filtersOpen);
+      hdr.classList.toggle('is-fastlane', fastlaneOpen);
+      filtersRow.classList.toggle('hidden', !filtersOpen);
+      filtersRow.setAttribute('aria-hidden', String(!filtersOpen));
+      fastlane.classList.toggle('open', fastlaneOpen);
+      fastlane.setAttribute('aria-hidden', String(!fastlaneOpen));
     }
-  };
-  const nextBtn = document.createElement('button');
-  nextBtn.type = 'button';
-  nextBtn.textContent = 'Next';
-  nextBtn.disabled = currentPage >= maxPage;
-  nextBtn.onclick = function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (currentPage < maxPage) {
-      currentPage++;
-      document.getElementById('searchForm').dispatchEvent(new Event('submit', {cancelable: true, bubbles: false}));
-    }
-  };
-  const pageInfo = document.createElement('span');
-  pageInfo.textContent = `Page ${currentPage} of ${maxPage}`;
-  paginationDiv.appendChild(prevBtn);
-  paginationDiv.appendChild(pageInfo);
-  paginationDiv.appendChild(nextBtn);
-}
 
-function renderFilters() {
-  const filtersDiv = document.getElementById('filters-strip');
-  filtersDiv.innerHTML = '';
-  if (!selectedMethod || !methodCapabilities[selectedMethod] || !Array.isArray(methodCapabilities[selectedMethod].filters)) {
-    filtersDiv.style.display = 'none';
-    return;
-  }
-  filtersDiv.style.display = 'flex';
-  const filters = methodCapabilities[selectedMethod].filters;
-  filters.forEach(filter => {
-    const filterLabel = document.createElement('label');
-    filterLabel.style.marginRight = '12px';
-    filterLabel.style.display = 'flex';
-    filterLabel.style.alignItems = 'center';
-    filterLabel.title = filter.description || '';
-    filterLabel.innerHTML = `<span style='margin-right:4px;'>${filter.name}:</span>`;
-    let input;
-    if (Array.isArray(filter.choices)) {
-      input = document.createElement('select');
-      filter.choices.forEach(choice => {
-        const opt = document.createElement('option');
-        opt.value = choice;
-        opt.textContent = choice;
-        input.appendChild(opt);
-      });
-      input.value = (filterValues[filter.name] !== undefined) ? filterValues[filter.name] : filter.default;
-    } else {
-      input = document.createElement('input');
-      input.type = 'text';
-      input.value = (filterValues[filter.name] !== undefined) ? filterValues[filter.name] : (filter.default !== undefined ? filter.default : '');
-      input.style.width = '90px';
-    }
-    input.onchange = function() {
-      filterValues[filter.name] = input.value;
-    };
-    filterLabel.appendChild(input);
-    filtersDiv.appendChild(filterLabel);
-  });
-}
+    filtersBtn.addEventListener('click', () => {
+      filtersOpen = !filtersOpen;
+      applyHeaderState();
+    });
 
-function restoreDefaultResultsLayout() {
-  const mainDiv = document.querySelector('.content__left');
-  if (mainDiv) {
-    mainDiv.innerHTML = `<div class='serp-list' id='results'></div>`;
-  }
-}
+    fastlaneBtn.addEventListener('click', () => {
+      fastlaneOpen = !fastlaneOpen;
+      applyHeaderState();
+    });
 
-function selectMethod(method) {
-  selectedMethod = method;
-  currentPage = 1;
-  renderMethods();
-  restoreDefaultResultsLayout();
-  renderPagination();
-  renderFilters();
-}
-
-document.getElementById('nodeAddress').onchange = function() {
-  selectedMethod = null;
-  fetchMethods();
-  restoreDefaultResultsLayout();
-};
-
-document.getElementById('searchForm').onsubmit = async function(e) {
-  e.preventDefault();
-  restoreDefaultResultsLayout();
-  const resultsMain = document.getElementById('results');
-  const query = document.getElementById('searchInput').value.trim();
-  if (!query || !selectedMethod) return;
-  if (resultsMain) resultsMain.innerHTML = '<em>Searching...</em>';
-  const node = document.getElementById('nodeAddress').value.trim();
-  let body = { query, method: selectedMethod };
-  // Always use rankingPreferences for pagination and filters
-  let rankingPreferences = {};
-  if (methodCapabilities[selectedMethod] && methodCapabilities[selectedMethod].pagination) {
-    const pageParam = methodCapabilities[selectedMethod].pageParam || 'p';
-    rankingPreferences[pageParam] = currentPage;
-  }
-  // Add filters to rankingPreferences
-  if (methodCapabilities[selectedMethod] && Array.isArray(methodCapabilities[selectedMethod].filters)) {
-    methodCapabilities[selectedMethod].filters.forEach(filter => {
-      if (filterValues[filter.name] !== undefined && filterValues[filter.name] !== '') {
-        rankingPreferences[filter.name] = filterValues[filter.name];
-      } else if (filter.default !== undefined) {
-        rankingPreferences[filter.name] = filter.default;
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && (fastlaneOpen || filtersOpen)) {
+        fastlaneOpen = false; filtersOpen = false; applyHeaderState();
       }
     });
+
+    // ----------------- Old frontend logic ported -----------------
+    const url = new URL(window.location.href);
+    const NODE = url.searchParams.get('node') || 'http://localhost:3000';
+
+    let methods = [];
+    let selectedMethod = null;
+    let methodCapabilities = {};
+    let currentPage = 1;
+    let filterValues = {};
+
+    const typesNav = document.getElementById('typesNav');
+    const resultsDiv = document.getElementById('results');
+    const mainIslandsDiv = document.getElementById('mainIslands');
+    const supportingIslands = document.getElementById('supportingIslands');
+    const pagerDiv = document.getElementById('pager');
+    const searchForm = document.getElementById('searchForm');
+    const qInput = document.getElementById('q');
+    const goBtn = document.getElementById('goBtn');
+    const suggestionsDiv = document.getElementById('suggestions');
+// Portal the suggestions out of header to avoid clipping
+document.body.appendChild(suggestionsDiv);
+Object.assign(suggestionsDiv.style, {
+  position: 'fixed',
+  left: '0px',
+  top: '0px',
+  right: 'auto',
+  display: 'none',
+  zIndex: '9999'
+});
+
+const SUGG_MARGIN = 6;
+let suggItems = [];
+let suggIdx = -1;
+
+function layoutSuggestions() {
+  if (suggestionsDiv.style.display !== 'block') return;
+  const r = qInput.getBoundingClientRect();
+  if (!r.width || !r.height) return;
+
+  // Default below input
+  const belowTop = r.bottom + SUGG_MARGIN;
+  const maxBelow = window.innerHeight - belowTop - 8;
+
+  // Temporarily show to calculate intrinsic height
+  const prevDisplay = suggestionsDiv.style.display;
+  suggestionsDiv.style.display = 'block';
+  const intrinsic = Math.min(240, suggestionsDiv.scrollHeight || 240);
+  suggestionsDiv.style.display = prevDisplay;
+
+  // If not enough room below, place above
+  const placeAbove = maxBelow < Math.min(intrinsic, 180);
+  const top = placeAbove
+    ? Math.max(8, r.top - SUGG_MARGIN - Math.min(240, r.top - 8))
+    : belowTop;
+
+  suggestionsDiv.style.left = `${Math.round(r.left)}px`;
+  suggestionsDiv.style.top = `${Math.round(top)}px`;
+  suggestionsDiv.style.width = `${Math.round(r.width)}px`;
+  suggestionsDiv.style.maxHeight = `${placeAbove ? Math.min(240, r.top - 8) : Math.min(240, maxBelow)}px`;
+}
+
+function showSuggestions(list) {
+  suggestionsDiv.innerHTML = '';
+  suggItems = list || [];
+  suggIdx = -1;
+
+  if (!suggItems.length) {
+    suggestionsDiv.style.display = 'none';
+    return;
   }
-  if (Object.keys(rankingPreferences).length > 0) {
-    body.rankingPreferences = rankingPreferences;
+
+  for (let i = 0; i < suggItems.length; i++) {
+    const s = suggItems[i];
+    const item = document.createElement('div');
+    item.className = 'suggestion-item';
+    item.textContent = s;
+    item.onclick = () => {
+      qInput.value = s;
+      suggestionsDiv.style.display = 'none';
+      qInput.focus();
+      // handleSearch(); // optional
+    };
+    suggestionsDiv.appendChild(item);
   }
+
+  suggestionsDiv.style.display = 'block';
+  layoutSuggestions();
+}
+
+// Keyboard navigation
+qInput.addEventListener('keydown', (e) => {
+  if (suggestionsDiv.style.display !== 'block' || !suggItems.length) return;
+
+  if (e.key === 'ArrowDown') {
+    suggIdx = (suggIdx + 1) % suggItems.length;
+    [...suggestionsDiv.children].forEach((n, i) => n.classList.toggle('selected', i === suggIdx));
+    e.preventDefault();
+  } else if (e.key === 'ArrowUp') {
+    suggIdx = (suggIdx - 1 + suggItems.length) % suggItems.length;
+    [...suggestionsDiv.children].forEach((n, i) => n.classList.toggle('selected', i === suggIdx));
+    e.preventDefault();
+  } else if (e.key === 'Enter') {
+    if (suggIdx >= 0 && suggIdx < suggItems.length) {
+      qInput.value = suggItems[suggIdx];
+      suggestionsDiv.style.display = 'none';
+      e.preventDefault();
+    }
+  } else if (e.key === 'Escape') {
+    suggestionsDiv.style.display = 'none';
+  }
+});
+
+// Fetch + debounce
+let debounceId = null;
+let lastFetchId = 0;
+
+async function fetchSuggestions(query) {
+  if (!query) return [];
   try {
-    const res = await fetch(node + '/search', {
+    const res = await fetch(NODE + '/suggest', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      body: JSON.stringify({ partial: query })
     });
+    if (!res.ok) return [];
     const data = await res.json();
-    // Update currentPage from response meta if present
-    if (data.meta && typeof data.meta.page === 'number') {
-      currentPage = data.meta.page;
+    return Array.isArray(data.suggestions) ? data.suggestions : [];
+  } catch {
+    return [];
+  }
+}
+
+qInput.addEventListener('input', () => {
+  const val = qInput.value.trim();
+  if (debounceId) clearTimeout(debounceId);
+
+  if (!val) {
+    suggestionsDiv.style.display = 'none';
+    return;
+  }
+
+  const fetchId = ++lastFetchId;
+  debounceId = setTimeout(async () => {
+    const list = await fetchSuggestions(val);
+    if (fetchId !== lastFetchId) return;
+    showSuggestions(list);
+  }, 180);
+});
+
+// Close on outside click
+document.addEventListener('click', (e) => {
+  if (!suggestionsDiv.contains(e.target) && e.target !== qInput) {
+    suggestionsDiv.style.display = 'none';
+  }
+});
+
+// Keep aligned during layout changes
+const relayout = () => layoutSuggestions();
+window.addEventListener('resize', relayout, { passive: true });
+// Capture-phase scroll hits any scrollable ancestor
+window.addEventListener('scroll', relayout, { passive: true, capture: true });
+qInput.addEventListener('focus', relayout);
+
+// Reflow when returning to tab or page is shown from bfcache
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') relayout();
+});
+window.addEventListener('pageshow', relayout);
+
+// If you have a header toggle (filters/fastlane), re-run layout after it changes
+const _applyHeaderState = applyHeaderState;
+applyHeaderState = function () {
+  _applyHeaderState();
+  relayout();
+};
+
+// Optional: track direct size changes of the input (font zoom, container resize)
+if ('ResizeObserver' in window) {
+  const ro = new ResizeObserver(() => relayout());
+  ro.observe(qInput);
+}
+function prettifyId(id) {
+  return id
+    .replace(/[-_]+/g, ' ')            // kebab/underscore to spaces
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2') // split camelCase
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, c => c.toUpperCase()); // Title Case
+}
+
+function getMethodLabel(id) {
+  const caps = methodCapabilities[id] || {};
+  return caps.displayName || caps.label || caps.name || caps.title || prettifyId(id);
+}
+
+function getMethodDescription(id) {
+  const caps = methodCapabilities[id] || {};
+  return caps.description || '';
+}
+
+    function getParam(name) {
+      return url.searchParams.get(name);
     }
-    renderPagination();
-    // Show custom HTML layout if provided, otherwise show default answers list
-    const html = (typeof data.html === 'string' && data.html.trim()) ? data.html : null;
-    if (html) {
-      if (resultsMain) resultsMain.innerHTML = html;
-    } else {
-      const answers = data.answers || [];
-      // Render islands in the correct columns if present
-      let mainIslandsHtml = '';
-      if (Array.isArray(data.islands) && data.islands.length) {
-        // Supporting (right) column
-        const rightCol = document.getElementById('supporting_column');
-        if (rightCol) {
-          rightCol.innerHTML = data.islands
-            .filter(island => island.column === 'supporting' && typeof island.html === 'string')
-            .map(island => `
-              <div class="serp-block">
-                <div class="serp-block__head">
-                  <div class="serp-block__head-wrap">${island.name || ''}</div>
-                </div>
-                <div class="serp-item">
-                  <div class="island island-interactive i-clearfix">
-                    ${island.html}
-                  </div>
-                </div>
-              </div>
-            `)
-            .join('');
+
+    async function fetchMethods() {
+      try {
+        const res = await fetch(NODE + '/metadata');
+        const data = await res.json();
+        methods = data.methods || [];
+        methodCapabilities = data.methodCapabilities || {};
+        renderMethods();
+
+        // Select method from URL ?method= or ?type=
+        const urlMethod = getParam('method') || getParam('type');
+        if (!selectedMethod && methods.length) {
+          const pick = methods.includes(urlMethod) ? urlMethod : methods[0];
+          selectMethod(pick);
         }
-        // Main (left) column, before results
-        mainIslandsHtml = data.islands
-          .filter(island => island.column === 'main' && typeof island.html === 'string')
-          .map(island => `
-            <div class="serp-block">
-              <div class="serp-block__head">
-                <div class="serp-block__head-wrap">${island.name || ''}</div>
-              </div>
-              <div class="serp-item">
-                <div class="serp-item__wrap island island-interactive i-clearfix">
+
+        // Pre-fill query
+        const q = getParam('q');
+        if (q) {
+          qInput.value = q;
+          // Optional: auto search when query exists
+          handleSearch();
+        }
+      } catch (e) {
+        console.error('Failed to fetch methods:', e);
+      }
+    }
+
+    function renderMethods() {
+        if (!typesNav) return;
+        typesNav.innerHTML = '';
+        methods.forEach((method) => {
+            const label = getMethodLabel(method);
+            const desc = getMethodDescription(method);
+            const a = document.createElement('a');
+            a.className = 'type';
+            if (method === selectedMethod) a.setAttribute('aria-current', 'page');
+            a.href = '#';
+            a.title = desc || label; // nice hover text if you have description
+            a.onclick = (e) => {
+            e.preventDefault();
+            selectMethod(method);
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.set('method', method);
+            history.replaceState({}, '', newUrl);
+            };
+            a.innerHTML = `
+            <div class="ico"></div>
+            <div class="lbl">${label}</div>
+            `;
+            typesNav.appendChild(a);
+        });
+    }
+
+    function renderFilters() {
+      filtersRow.innerHTML = '';
+      const caps = methodCapabilities[selectedMethod];
+      if (!caps || !Array.isArray(caps.filters) || !caps.filters.length) {
+        // No filters available for this method
+        return;
+      }
+      caps.filters.forEach(filter => {
+        const label = document.createElement('label');
+        label.style.display = 'block';
+        label.style.minWidth = '140px';
+        label.style.whiteSpace = 'nowrap';
+        const nameSpan = document.createElement('span');
+        nameSpan.style.fontSize = '12px';
+        nameSpan.style.color = 'var(--muted)';
+        nameSpan.style.display = 'block';
+        nameSpan.style.marginBottom = '4px';
+        nameSpan.textContent = (filter.name || '').trim();
+        label.title = filter.description || '';
+        label.appendChild(nameSpan);
+
+        let input;
+        if (Array.isArray(filter.choices)) {
+          input = document.createElement('select');
+          input.className = 'sel';
+          filter.choices.forEach(choice => {
+            const opt = document.createElement('option');
+            opt.value = choice;
+            opt.textContent = choice;
+            input.appendChild(opt);
+          });
+          input.value = (filterValues[filter.name] !== undefined) ? filterValues[filter.name] : (filter.default !== undefined ? filter.default : (filter.choices[0] || ''));
+        } else {
+          input = document.createElement('input');
+          input.type = 'text';
+          input.className = 'flt-input';
+          input.value = (filterValues[filter.name] !== undefined) ? filterValues[filter.name] : (filter.default !== undefined ? filter.default : '');
+        }
+        input.onchange = () => {
+          filterValues[filter.name] = input.value;
+        };
+        label.appendChild(input);
+        filtersRow.appendChild(label);
+      });
+    }
+
+    function restoreDefaultResultsLayout() {
+      mainIslandsDiv.innerHTML = '';
+      resultsDiv.innerHTML = '';
+      supportingIslands.innerHTML = '';
+    }
+
+    function selectMethod(method) {
+      selectedMethod = method;
+      currentPage = 1;
+      renderMethods();
+      renderFilters();
+      restoreDefaultResultsLayout();
+      renderPagination(); // Show/hide pager according to capabilities
+    }
+
+    function renderPagination() {
+      if (!pagerDiv) return;
+      pagerDiv.innerHTML = '';
+      const caps = methodCapabilities[selectedMethod];
+      if (!selectedMethod || !caps || !caps.pagination) {
+        pagerDiv.style.display = 'none';
+        return;
+      }
+      pagerDiv.style.display = 'flex';
+      const pageParam = caps.pageParam || 'p';
+      const maxPage = caps.maxPage || 100;
+
+      const prevBtn = document.createElement('button');
+      prevBtn.className = 'btn';
+      prevBtn.textContent = 'Previous';
+      prevBtn.disabled = currentPage <= 1;
+      prevBtn.onclick = (e) => {
+        e.preventDefault();
+        if (currentPage > 1) {
+          currentPage--;
+          handleSearch();
+        }
+      };
+
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'btn';
+      nextBtn.textContent = 'Next';
+      nextBtn.disabled = currentPage >= maxPage;
+      nextBtn.onclick = (e) => {
+        e.preventDefault();
+        if (currentPage < maxPage) {
+          currentPage++;
+          handleSearch();
+        }
+      };
+
+      const pageInfo = document.createElement('span');
+      pageInfo.textContent = `Page ${currentPage} of ${maxPage}`;
+
+      pagerDiv.appendChild(prevBtn);
+      pagerDiv.appendChild(pageInfo);
+      pagerDiv.appendChild(nextBtn);
+    }
+
+    function highlightKeyword(text, keyword) {
+      if (!text || !keyword) return text || '';
+      const safe = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return text.replace(new RegExp(`(${safe})`, 'gi'), '<b>$1</b>');
+    }
+
+    function setSearchingState() {
+      resultsDiv.innerHTML = '<div class="meta" style="padding:10px 0 6px 16px;">Searching...</div>';
+    }
+
+    async function handleSearch() {
+      const query = (qInput.value || '').trim();
+      if (!query || !selectedMethod) return;
+
+      // Update ?q= in URL (no reload)
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set('q', query);
+      history.replaceState({}, '', newUrl);
+
+      restoreDefaultResultsLayout();
+      setSearchingState();
+
+      let body = { query, method: selectedMethod };
+      let rankingPreferences = {};
+
+      const caps = methodCapabilities[selectedMethod] || {};
+      if (caps.pagination) {
+        const pageParam = caps.pageParam || 'p';
+        rankingPreferences[pageParam] = currentPage;
+      }
+      if (Array.isArray(caps.filters)) {
+        caps.filters.forEach(filter => {
+          if (filterValues[filter.name] !== undefined && filterValues[filter.name] !== '') {
+            rankingPreferences[filter.name] = filterValues[filter.name];
+          } else if (filter.default !== undefined) {
+            rankingPreferences[filter.name] = filter.default;
+          }
+        });
+      }
+      if (Object.keys(rankingPreferences).length > 0) {
+        body.rankingPreferences = rankingPreferences;
+      }
+
+      try {
+        const res = await fetch(NODE + '/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+
+        // Update currentPage from response meta if present
+        if (data.meta && typeof data.meta.page === 'number') {
+          currentPage = data.meta.page;
+        }
+        renderPagination();
+
+        // Custom HTML layout
+        const html = (typeof data.html === 'string' && data.html.trim()) ? data.html : null;
+        if (html) {
+          resultsDiv.innerHTML = html;
+          return;
+        }
+
+        // Islands
+        if (Array.isArray(data.islands) && data.islands.length) {
+          const mainIslands = data.islands.filter(island => island.column === 'main' && typeof island.html === 'string');
+          const suppIslands = data.islands.filter(island => island.column === 'supporting' && typeof island.html === 'string');
+
+          mainIslandsDiv.innerHTML = mainIslands.map(island => `
+            <article class="island">
+              <div class="head">${island.name || ''}</div>
+              <div class="inner">
+                <div style="grid-column: 1 / -1;">
                   ${island.html}
                 </div>
               </div>
-            </div>
-          `)
-          .join('');
-      } else {
-        // Clear right column if no supporting islands
-        const rightCol = document.getElementById('supporting_column');
-        if (rightCol) rightCol.innerHTML = '';
-      }
-      // Group results by domain and render each group in its own serp-block
-      let lastDomain = null;
-      let html = '';
-      answers.forEach((a, i) => {
-        const isNewDomain = a.domain !== lastDomain;
-        if (isNewDomain) {
-          html += `<div class="serp-block">`;
-        }
-        html += `
-          <div class="serp-item serp-item_plain_yes  ">
-            <div class="serp-item__wrap island i-clearfix">
-              <h2 class="serp-item__title">
-                <a class="serp-item__title-link b-link" href="${a.url}" target="_blank">
-                  ${highlightKeyword(a.name, query)}
-                </a>
-              </h2>
-              <div class="serp-item__greenurl serp-url">
-                <a class="serp-url__link" target="_blank">${a.domain}</a>
+            </article>
+          `).join('');
+
+          supportingIslands.innerHTML = suppIslands.map(island => `
+            <article class="island">
+              <div class="head">${island.name || ''}</div>
+              <div class="inner">
+                <div style="grid-column: 1 / -1;">
+                  ${island.html}
+                </div>
               </div>
-              <div class="serp-item__text">${highlightKeyword(a.snippet || '', query)}</div>
-            </div>
-          </div>
-        `;
-        // If next result is a new domain or this is the last result, close the group
-        const next = answers[i + 1];
-        if (!next || next.domain !== a.domain) {
-          html += '</div>';
+            </article>
+          `).join('');
+        } else {
+          supportingIslands.innerHTML = '';
+          mainIslandsDiv.innerHTML = '';
         }
-        lastDomain = a.domain;
-      });
-      if (resultsMain) resultsMain.innerHTML = mainIslandsHtml + html;
-      // Islands and error handling can be added here if needed
-    }
-  } catch (err) {
-    restoreDefaultResultsLayout();
-    const resultsMain = document.getElementById('results');
-    if (resultsMain) resultsMain.innerHTML = `<div class='error'>${err.message}</div>`;
-    renderPagination();
-  }
-};
 
-function highlightKeyword(text, keyword) {
-  if (!keyword) return text;
-  const safe = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return text.replace(new RegExp(`(${safe})`, 'gi'), '<b>$1</b>');
-}
+        // Results
+        const answers = Array.isArray(data.answers) ? data.answers : [];
+        if (!answers.length) {
+          resultsDiv.innerHTML = '<div class="meta" style="padding:10px 0 6px 16px;">No results</div>';
+          return;
+        }
 
-// --- Search Suggestions UI ---
-// Add suggestions container after searchInput
-// (This should be placed in the HTML, but we'll inject it for now)
-window.addEventListener('DOMContentLoaded', function() {
-  const searchInput = document.getElementById('searchInput');
-  if (!searchInput) return;
-  let suggestionsDiv = document.getElementById('suggestions');
-  if (!suggestionsDiv) {
-    suggestionsDiv = document.createElement('div');
-    suggestionsDiv.id = 'suggestions';
-    suggestionsDiv.className = 'suggestions-list';
-    suggestionsDiv.style.display = 'none';
-    suggestionsDiv.style.position = 'absolute';
-    suggestionsDiv.style.left = '0';
-    suggestionsDiv.style.right = '0';
-    suggestionsDiv.style.top = '100%';
-    suggestionsDiv.style.zIndex = '100';
-    searchInput.parentElement.appendChild(suggestionsDiv);
-    searchInput.parentElement.style.position = 'relative';
-  }
+        let lastDomain = null;
+        let out = '';
+        answers.forEach((a, i) => {
+          const isNewDomain = a.domain !== lastDomain;
+          if (isNewDomain) {
+            if (lastDomain !== null) out += '</div>'; // close previous group
+            out += '<div class="results-group">';
+          }
+          out += `
+            <div class="result">
+              <a href="${a.url}" target="_blank" rel="noopener noreferrer">${highlightKeyword(a.name || a.url || '', query)}</a>
+              <div class="url">${a.domain || ''}</div>
+              <div class="meta">${highlightKeyword(a.snippet || '', query)}</div>
+            </div>
+          `;
+          lastDomain = a.domain;
+          const next = answers[i + 1];
+          if (!next || next.domain !== a.domain) {
+            out += '</div>'; // close group
+          }
+        });
+        resultsDiv.innerHTML = out;
 
-  let suggestions = [];
-  let selectedIdx = -1;
-  let debounceTimeout = null;
-  let lastFetchId = 0;
-
-  async function fetchSuggestions(query) {
-    if (!query) return [];
-    const node = document.getElementById('nodeAddress').value.trim();
-    try {
-      const res = await fetch(node + '/suggest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ partial: query })
-      });
-      if (!res.ok) return [];
-      const data = await res.json();
-      if (Array.isArray(data.suggestions)) return data.suggestions;
-      return [];
-    } catch (e) {
-      return [];
-    }
-  }
-
-  function showSuggestions(list) {
-    suggestionsDiv.innerHTML = '';
-    if (!list.length) {
-      suggestionsDiv.style.display = 'none';
-      return;
-    }
-    list.forEach((s, i) => {
-      const item = document.createElement('div');
-      item.className = 'suggestion-item' + (i === selectedIdx ? ' selected' : '');
-      item.textContent = s;
-      item.onclick = function() {
-        searchInput.value = s;
-        suggestionsDiv.style.display = 'none';
-        searchInput.focus();
-      };
-      suggestionsDiv.appendChild(item);
-    });
-    suggestionsDiv.style.display = 'block';
-  }
-
-  searchInput.addEventListener('input', function(e) {
-    const val = searchInput.value.trim();
-    selectedIdx = -1;
-    if (debounceTimeout) clearTimeout(debounceTimeout);
-    if (!val) {
-      suggestions = [];
-      showSuggestions([]);
-      return;
-    }
-    const fetchId = ++lastFetchId;
-    debounceTimeout = setTimeout(async () => {
-      const sugg = await fetchSuggestions(val);
-      if (fetchId !== lastFetchId) return; // Only show latest
-      suggestions = sugg;
-      showSuggestions(suggestions);
-    }, 180);
-  });
-
-  searchInput.addEventListener('keydown', function(e) {
-    if (!suggestions.length || suggestionsDiv.style.display === 'none') return;
-    if (e.key === 'ArrowDown') {
-      selectedIdx = (selectedIdx + 1) % suggestions.length;
-      showSuggestions(suggestions);
-      e.preventDefault();
-    } else if (e.key === 'ArrowUp') {
-      selectedIdx = (selectedIdx - 1 + suggestions.length) % suggestions.length;
-      showSuggestions(suggestions);
-      e.preventDefault();
-    } else if (e.key === 'Enter') {
-      if (selectedIdx >= 0 && selectedIdx < suggestions.length) {
-        searchInput.value = suggestions[selectedIdx];
-        suggestionsDiv.style.display = 'none';
-        e.preventDefault();
+      } catch (err) {
+        resultsDiv.innerHTML = `<div class="meta" style="padding:10px 0 6px 16px; color:#c00;">${(err && err.message) || 'Search failed'}</div>`;
+        renderPagination();
       }
-    } else if (e.key === 'Escape') {
-      suggestionsDiv.style.display = 'none';
     }
-  });
 
-  document.addEventListener('click', function(e) {
-    if (!suggestionsDiv.contains(e.target) && e.target !== searchInput) {
-      suggestionsDiv.style.display = 'none';
-    }
-  });
-});
-// --- End Search Suggestions UI ---
+    // Suggestions
+    (function setupSuggestions() {
+      if (!qInput || !suggestionsDiv) return;
 
-fetchMethods();
-</script>
-<div id="pagination" style="text-align:center;margin:20px 0;"></div>
+      let list = [];
+      let selectedIdx = -1;
+      let debounceTimeout = null;
+      let lastFetchId = 0;
+
+      function showSuggestions(items) {
+        suggestionsDiv.innerHTML = '';
+        if (!items.length) {
+          suggestionsDiv.style.display = 'none';
+          return;
+        }
+        items.forEach((s, i) => {
+          const item = document.createElement('div');
+          item.className = 'suggestion-item' + (i === selectedIdx ? ' selected' : '');
+          item.textContent = s;
+          item.onclick = () => {
+            qInput.value = s;
+            suggestionsDiv.style.display = 'none';
+            qInput.focus();
+          };
+          suggestionsDiv.appendChild(item);
+        });
+        suggestionsDiv.style.display = 'block';
+      }
+
+      async function fetchSuggestions(query) {
+        if (!query) return [];
+        try {
+          const res = await fetch(NODE + '/suggest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ partial: query })
+          });
+          if (!res.ok) return [];
+          const data = await res.json();
+          if (Array.isArray(data.suggestions)) return data.suggestions;
+          return [];
+        } catch {
+          return [];
+        }
+      }
+
+      qInput.addEventListener('input', () => {
+        const val = qInput.value.trim();
+        selectedIdx = -1;
+        if (debounceTimeout) clearTimeout(debounceTimeout);
+        if (!val) {
+          list = [];
+          showSuggestions([]);
+          return;
+        }
+        const fetchId = ++lastFetchId;
+        debounceTimeout = setTimeout(async () => {
+          const sugg = await fetchSuggestions(val);
+          if (fetchId !== lastFetchId) return;
+          list = sugg;
+          showSuggestions(list);
+        }, 180);
+      });
+
+      qInput.addEventListener('keydown', (e) => {
+        if (!list.length || suggestionsDiv.style.display === 'none') return;
+        if (e.key === 'ArrowDown') {
+          selectedIdx = (selectedIdx + 1) % list.length;
+          showSuggestions(list);
+          e.preventDefault();
+        } else if (e.key === 'ArrowUp') {
+          selectedIdx = (selectedIdx - 1 + list.length) % list.length;
+          showSuggestions(list);
+          e.preventDefault();
+        } else if (e.key === 'Enter') {
+          if (selectedIdx >= 0 && selectedIdx < list.length) {
+            qInput.value = list[selectedIdx];
+            suggestionsDiv.style.display = 'none';
+            e.preventDefault();
+          }
+        } else if (e.key === 'Escape') {
+          suggestionsDiv.style.display = 'none';
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!suggestionsDiv.contains(e.target) && e.target !== qInput) {
+          suggestionsDiv.style.display = 'none';
+        }
+      });
+    })();
+
+    // Wire up search
+    searchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      handleSearch();
+    });
+    goBtn.addEventListener('click', () => handleSearch());
+
+    // Boot
+    fetchMethods();
+  </script>
 </body>
+
 </html>

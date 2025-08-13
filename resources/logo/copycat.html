@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Index — Make Your Own Logo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed:wght@400&display=swap');
+
+  html, body { height: 100%; margin: 0; background: transparent; }
+  .stage {
+    position: relative; width: 100%; height: 100%;
+    min-width: 272px; min-height: 92px;
+    display: grid; place-items: center; overflow: hidden;
+  }
+
+  .logo {
+    position: relative; z-index: 2;
+    font-family: "Fira Sans Extra Condensed", sans-serif;
+    font-weight: 400;
+    letter-spacing: .5px;
+    line-height: 1;
+    font-size: 96px;
+    color: #fff;            /* white text for dark backgrounds */
+    user-select: none;
+    transform-origin: center;
+    will-change: transform;
+    text-align: center;
+    justify-self: center;
+  }
+  .logo .i { color: #1a73e8; }    /* blue Index I */
+  .logo .rest { color: #fff; }
+
+  .hint {
+    position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+    font: 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    color: #94a3b8; opacity: .9; white-space: nowrap; pointer-events: none;
+  }
+  @media (max-height: 110px) { .hint { display: none; } }
+</style>
+</head>
+<body>
+  <div id="stage" class="stage" aria-live="polite" aria-label="Type in the search bar to customize the Index logo.">
+    <div id="logo" class="logo">
+      <span class="i">I</span><span class="rest">ndex</span>
+    </div>
+    <div class="hint">Type in the search bar to make your own Index logo</div>
+  </div>
+
+<script>
+(() => {
+  const stage = document.getElementById('stage');
+  const logo = document.getElementById('logo');
+  let last = '';
+
+  // Split a string into [pre, highlightedChar, post]
+  // - highlight first 'i' or 'I' if present; else highlight first character
+  function splitForHighlight(s) {
+    const arr = [...s]; // code-point safe
+    if (!arr.length) return ['', '', ''];
+    let idx = arr.findIndex(c => c.toLowerCase() === 'i');
+    if (idx < 0) idx = 0;
+    return [arr.slice(0, idx).join(''), arr[idx] || '', arr.slice(idx + 1).join('')];
+  }
+
+  function setText(text) {
+    let s = (text || '').replace(/\s+/g, ' ').trim();
+    if (!s) s = 'Index';
+
+    if (s === last) return;
+    last = s;
+
+    const [pre, hi, post] = splitForHighlight(s);
+    // Clear and rebuild as text nodes to avoid HTML injection
+    logo.innerHTML = '';
+    if (pre) {
+      const preSpan = document.createElement('span');
+      preSpan.className = 'rest';
+      preSpan.textContent = pre;
+      logo.appendChild(preSpan);
+    }
+    if (hi) {
+      const iSpan = document.createElement('span');
+      iSpan.className = 'i';
+      iSpan.textContent = hi;
+      logo.appendChild(iSpan);
+    }
+    if (post) {
+      const postSpan = document.createElement('span');
+      postSpan.className = 'rest';
+      postSpan.textContent = post;
+      logo.appendChild(postSpan);
+    }
+  }
+
+  // Try to hook into parent's search box (#q or first search input)
+  function attachToParent() {
+    try {
+      if (window.parent === window) return; // not in an iframe
+      const pd = window.parent.document;
+      const input = pd.getElementById('q') || pd.querySelector('input[type="search"], input[name="q"]');
+      if (input) {
+        const sync = () => setText(input.value);
+        input.addEventListener('input', sync, { passive: true });
+        // Initial sync
+        setText(input.value);
+      }
+    } catch (e) {
+      // Cross-origin or sandboxed; rely on postMessage or ?q= param
+    }
+  }
+
+  // Accept postMessage updates: { type: "index:query", q: "..." }
+  window.addEventListener('message', (e) => {
+    try {
+      // If you want stricter checks, compare e.origin with location.origin
+      if (!e || !e.data) return;
+      const d = e.data;
+      if (d.type === 'index:query' || d.type === 'index-query') {
+        setText(String(d.q || ''));
+      }
+    } catch (_) {}
+  });
+
+  // Fallback: read ?q= from iframe URL if provided
+  function readQueryParam() {
+    const q = new URLSearchParams(location.search).get('q');
+    if (q) setText(q);
+  }
+
+
+  // Init
+  readQueryParam();
+  attachToParent();
+  setText(last); // ensure render if nothing else ran
+})();
+</script>
+</body>
+</html>
