@@ -524,30 +524,72 @@ function getMethodDescription(id) {
       }
 
       try {
-        const res = await fetch(NODE + '/search', {
+        // Make parallel requests for faster loading
+        const searchPromise = fetch(NODE + '/search', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body)
         });
-        const data = await res.json();
+
+        const islandsPromise = fetch(NODE + '/islands', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, method: selectedMethod })
+        });
+
+        // Handle search results first (faster)
+        const searchRes = await searchPromise;
+        const searchData = await searchRes.json();
 
         // Update currentPage from response meta if present
-        if (data.meta && typeof data.meta.page === 'number') {
-          currentPage = data.meta.page;
+        if (searchData.meta && typeof searchData.meta.page === 'number') {
+          currentPage = searchData.meta.page;
         }
         renderPagination();
 
         // Custom HTML layout
-        const html = (typeof data.html === 'string' && data.html.trim()) ? data.html : null;
+        const html = (typeof searchData.html === 'string' && searchData.html.trim()) ? searchData.html : null;
         if (html) {
           resultsDiv.innerHTML = html;
           return;
         }
 
-        // Islands
-        if (Array.isArray(data.islands) && data.islands.length) {
-          const mainIslands = data.islands.filter(island => island.column === 'main' && typeof island.html === 'string');
-          const suppIslands = data.islands.filter(island => island.column === 'supporting' && typeof island.html === 'string');
+        // Results
+        const answers = Array.isArray(searchData.answers) ? searchData.answers : [];
+        if (!answers.length) {
+          resultsDiv.innerHTML = '<div class="meta" style="padding:10px 0 6px 16px;">No results</div>';
+        } else {
+          let lastDomain = null;
+          let out = '';
+          answers.forEach((a, i) => {
+            const isNewDomain = a.domain !== lastDomain;
+            if (isNewDomain) {
+              if (lastDomain !== null) out += '</div>'; // close previous group
+              out += '<div class="results-group">';
+            }
+            out += `
+              <div class="result">
+                <a href="${a.url}" target="_blank" rel="noopener noreferrer">${highlightKeyword(a.name || a.url || '', query)}</a>
+                <div class="url">${a.domain || ''}</div>
+                <div class="meta">${highlightKeyword(a.snippet || '', query)}</div>
+              </div>
+            `;
+            lastDomain = a.domain;
+            const next = answers[i + 1];
+            if (!next || next.domain !== a.domain) {
+              out += '</div>'; // close group
+            }
+          });
+          resultsDiv.innerHTML = out;
+        }
+
+        // Handle islands when they're ready
+        const islandsRes = await islandsPromise;
+        const islandsData = await islandsRes.json();
+
+        if (Array.isArray(islandsData.islands) && islandsData.islands.length) {
+          const mainIslands = islandsData.islands.filter(island => island.column === 'main' && typeof island.html === 'string');
+          const suppIslands = islandsData.islands.filter(island => island.column === 'supporting' && typeof island.html === 'string');
 
           mainIslandsDiv.innerHTML = mainIslands.map(island => `
             <article class="island">
@@ -574,36 +616,6 @@ function getMethodDescription(id) {
           supportingIslands.innerHTML = '';
           mainIslandsDiv.innerHTML = '';
         }
-
-        // Results
-        const answers = Array.isArray(data.answers) ? data.answers : [];
-        if (!answers.length) {
-          resultsDiv.innerHTML = '<div class="meta" style="padding:10px 0 6px 16px;">No results</div>';
-          return;
-        }
-
-        let lastDomain = null;
-        let out = '';
-        answers.forEach((a, i) => {
-          const isNewDomain = a.domain !== lastDomain;
-          if (isNewDomain) {
-            if (lastDomain !== null) out += '</div>'; // close previous group
-            out += '<div class="results-group">';
-          }
-          out += `
-            <div class="result">
-              <a href="${a.url}" target="_blank" rel="noopener noreferrer">${highlightKeyword(a.name || a.url || '', query)}</a>
-              <div class="url">${a.domain || ''}</div>
-              <div class="meta">${highlightKeyword(a.snippet || '', query)}</div>
-            </div>
-          `;
-          lastDomain = a.domain;
-          const next = answers[i + 1];
-          if (!next || next.domain !== a.domain) {
-            out += '</div>'; // close group
-          }
-        });
-        resultsDiv.innerHTML = out;
 
       } catch (err) {
         resultsDiv.innerHTML = `<div class="meta" style="padding:10px 0 6px 16px; color:#c00;">${(err && err.message) || 'Search failed'}</div>`;

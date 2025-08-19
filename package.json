@@ -1,0 +1,33 @@
+{
+  "name": "index-frontend",
+  "version": "1.0.0",
+  "description": "This is a standalone frontend for the search node. It includes all HTML, CSS, and favicon assets, and connects to a backend node via a configurable address. Features include:",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BrickerFixer/Index-frontend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/BrickerFixer/Index-frontend/issues"
+  },
+  "homepage": "https://github.com/BrickerFixer/Index-frontend#readme",
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^3.0.0",
+    "@tailwindcss/postcss": "^4.1.11",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "svelte": "^4.2.0",
+    "svelte-routing": "^2.13.0",
+    "tailwindcss": "^3.4.0",
+    "vite": "^5.0.0"
+  }
+}

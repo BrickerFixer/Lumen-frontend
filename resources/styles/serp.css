@@ -100,3 +100,5 @@
   .island .inner { grid-template-columns: 1fr; }
   .thumb { width: 100%; height: 140px; }
 }
+
+.search-table { padding: 0 16px;}
