@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Index — Procedural Flowfield</title>
+<title>Lumen — Procedural Flowfield</title>
 <style>
 
   canvas { position: absolute; inset: 0; z-index: 1; display: block; }
@@ -13,8 +13,8 @@
 <body>
   <div id="stage" class="stage" aria-label="Procedural flowfield doodle. Move cursor to warp. Space to pause, N to reseed.">
     <canvas id="art"></canvas>
-    <div class="logo" role="img" aria-label="Index logo">
-      <span class="i">I</span><span class="rest">ndex</span>
+    <div class="logo" role="img" aria-label="Lumen logo">
+      <span class="i">L</span><span class="rest">umen</span>
     </div>
     <div class="hint">Space: pause • N: new seed</div>
   </div>
@@ -75,7 +75,7 @@
       y: Math.random() * H,
       px: null,
       py: null,
-      hue: 200 + Math.random() * 40,        // blue -> cyan
+      hue: 41 + Math.random() * 40,        // blue -> cyan
       alpha: 0.035 + Math.random() * 0.035, // faint stroke for glow
       lw: Math.random() < 0.25 ? 1.2 : 0.8  // occasional brighter lines
     };

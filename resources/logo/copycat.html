@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Index — Make Your Own Logo</title>
+<title>Lumen — Make Your Own Logo</title>
 <link rel="stylesheet" href="/resources/styles/branding.css">
 </head>
 <body>
-  <div id="stage" class="stage" aria-live="polite" aria-label="Type in the search bar to customize the Index logo.">
+  <div id="stage" class="stage" aria-live="polite" aria-label="Type in the search bar to customize the Lumen logo.">
     <div id="logo" class="logo">
       <span class="i">I</span><span class="rest">ndex</span>
     </div>
-    <div class="hint">Type in the search bar to make your own Index logo</div>
+    <div class="hint">Type in the search bar to make your own Lumen logo</div>
   </div>
 <script>
 (() => {
@@ -24,14 +24,14 @@
   function splitForHighlight(s) {
     const arr = [...s]; // code-point safe
     if (!arr.length) return ['', '', ''];
-    let idx = arr.findIndex(c => c.toLowerCase() === 'i');
+    let idx = arr.findIndex(c => c.toLowerCase() === 'l');
     if (idx < 0) idx = 0;
     return [arr.slice(0, idx).join(''), arr[idx] || '', arr.slice(idx + 1).join('')];
   }
 
   function setText(text) {
     let s = (text || '').replace(/\s+/g, ' ').trim();
-    if (!s) s = 'Index';
+    if (!s) s = 'Lumen';
 
     if (s === last) return;
     last = s;

@@ -1,19 +1,19 @@
 :root {
     --bg: #ffffff;
-    --fg: #0f1115;
-    --muted: #6b7177;
-    --hair: #e5e7eb;
-    --acc: #92BAC2;
+    --fg: #15130f;
+    --muted: #77736b;
+    --hair: #ebe9e5;
+    --acc: #FEBC2F;
     --hdr-h: 60px;
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --bg: #0f1115;
-        --fg: #f3f4f6;
-        --muted: #9aa3aa;
-        --hair: #1f2428;
-        --acc: #B8EAF5;
+        --bg:#2a2823;
+        --fg: #FFFFFF;
+        --muted: #aaa69a;
+        --hair:  #494842;
+        --acc: #FFEE6E;
     }
 }
 

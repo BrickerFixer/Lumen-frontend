@@ -101,4 +101,6 @@
   .thumb { width: 100%; height: 140px; }
 }
 
-.search-table { padding: 0 16px;}
+.search-table{
+  padding: 0 16px;
+}

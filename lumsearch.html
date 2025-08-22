@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Index — Search</title>
+  <title>Lumen — Search</title>
   <link href="resources/styles/serp.css" rel="stylesheet">
   <link href="resources/styles/universal.css" rel="stylesheet">
 </head>
@@ -13,13 +13,13 @@
   <header id="hdr" class="hdr" style="--hdr-h:72px">
     <div class="hdr-inner">
       <div class="bar">
-        <a href="/" aria-label="Index home">
-          <img class="logo-img" src="resources/service-icons/mini-mini.png" alt="Index">
+        <a href="/" aria-label="Lumen home">
+          <img class="logo-img" src="resources/service-icons/mini-mini.png" alt="Lumen">
         </a>
 
         <div class="search-table">
           <form class="search" id="searchForm" autocomplete="off">
-            <input class="q" id="q" name="q" type="search" placeholder="Search the index" autofocus />
+            <input class="q" id="q" name="q" type="search" placeholder="Search the Lumen" autofocus />
             <div id="suggestions" class="suggestions-list" aria-label="Suggestions"></div>
           </form>
           <button id="goBtn" class="bar-search-button" type="button">Go</button>
@@ -523,21 +523,21 @@ function getMethodDescription(id) {
         body.rankingPreferences = rankingPreferences;
       }
 
+      // Make parallel requests for search results and islands
+      const searchPromise = fetch(NODE + '/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      const islandsPromise = fetch(NODE + '/islands', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, method: selectedMethod })
+      });
+
       try {
-        // Make parallel requests for faster loading
-        const searchPromise = fetch(NODE + '/search', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        });
-
-        const islandsPromise = fetch(NODE + '/islands', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query, method: selectedMethod })
-        });
-
-        // Handle search results first (faster)
+        // Handle search results
         const searchRes = await searchPromise;
         const searchData = await searchRes.json();
 
@@ -551,42 +551,47 @@ function getMethodDescription(id) {
         const html = (typeof searchData.html === 'string' && searchData.html.trim()) ? searchData.html : null;
         if (html) {
           resultsDiv.innerHTML = html;
-          return;
-        }
-
-        // Results
-        const answers = Array.isArray(searchData.answers) ? searchData.answers : [];
-        if (!answers.length) {
-          resultsDiv.innerHTML = '<div class="meta" style="padding:10px 0 6px 16px;">No results</div>';
         } else {
-          let lastDomain = null;
-          let out = '';
-          answers.forEach((a, i) => {
-            const isNewDomain = a.domain !== lastDomain;
-            if (isNewDomain) {
-              if (lastDomain !== null) out += '</div>'; // close previous group
-              out += '<div class="results-group">';
-            }
-            out += `
-              <div class="result">
-                <a href="${a.url}" target="_blank" rel="noopener noreferrer">${highlightKeyword(a.name || a.url || '', query)}</a>
-                <div class="url">${a.domain || ''}</div>
-                <div class="meta">${highlightKeyword(a.snippet || '', query)}</div>
-              </div>
-            `;
-            lastDomain = a.domain;
-            const next = answers[i + 1];
-            if (!next || next.domain !== a.domain) {
-              out += '</div>'; // close group
-            }
-          });
-          resultsDiv.innerHTML = out;
+          // Results
+          const answers = Array.isArray(searchData.answers) ? searchData.answers : [];
+          if (!answers.length) {
+            resultsDiv.innerHTML = '<div class="meta" style="padding:10px 0 6px 16px;">No results</div>';
+          } else {
+            let lastDomain = null;
+            let out = '';
+            answers.forEach((a, i) => {
+              const isNewDomain = a.domain !== lastDomain;
+              if (isNewDomain) {
+                if (lastDomain !== null) out += '</div>'; // close previous group
+                out += '<div class="results-group">';
+              }
+              out += `
+                <div class="result">
+                  <a href="${a.url}" target="_blank" rel="noopener noreferrer">${highlightKeyword(a.name || a.url || '', query)}</a>
+                  <div class="url">${a.domain || ''}</div>
+                  <div class="meta">${highlightKeyword(a.snippet || '', query)}</div>
+                </div>
+              `;
+              lastDomain = a.domain;
+              const next = answers[i + 1];
+              if (!next || next.domain !== a.domain) {
+                out += '</div>'; // close group
+              }
+            });
+            resultsDiv.innerHTML = out;
+          }
         }
+      } catch (err) {
+        resultsDiv.innerHTML = `<div class="meta" style="padding:10px 0 6px 16px; color:#c00;">${(err && err.message) || 'Search failed'}</div>`;
+        renderPagination();
+      }
 
-        // Handle islands when they're ready
+      try {
+        // Handle islands
         const islandsRes = await islandsPromise;
         const islandsData = await islandsRes.json();
 
+        // Islands
         if (Array.isArray(islandsData.islands) && islandsData.islands.length) {
           const mainIslands = islandsData.islands.filter(island => island.column === 'main' && typeof island.html === 'string');
           const suppIslands = islandsData.islands.filter(island => island.column === 'supporting' && typeof island.html === 'string');
@@ -616,10 +621,10 @@ function getMethodDescription(id) {
           supportingIslands.innerHTML = '';
           mainIslandsDiv.innerHTML = '';
         }
-
       } catch (err) {
-        resultsDiv.innerHTML = `<div class="meta" style="padding:10px 0 6px 16px; color:#c00;">${(err && err.message) || 'Search failed'}</div>`;
-        renderPagination();
+        // Silently fail islands loading - not critical
+        supportingIslands.innerHTML = '';
+        mainIslandsDiv.innerHTML = '';
       }
     }
 

@@ -1,24 +1,23 @@
   @import url('/resources/fonts/firasans-extra-condensed-googlefonts.css');
 
-  :root {
-      --bg: #ffffff;
-      --fg: #0f1115;
-      --muted: #6b7177;
-      --hair: #e5e7eb;
-      --acc: #92BAC2;
-      --hdr-h: 60px;
-  }
+:root {
+    --bg: #ffffff;
+    --fg: #15130f;
+    --muted: #77736b;
+    --hair: #ebe9e5;
+    --acc: #FEBC2F;
+    --hdr-h: 60px;
+}
 
-  @media (prefers-color-scheme: dark) {
-      :root {
-          --bg: #0f1115;
-          --fg: #f3f4f6;
-          --muted: #9aa3aa;
-          --hair: #1f2428;
-          --acc: #B8EAF5;
-      }
-  }
-
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg:#494942;
+        --fg: #FFFFFF;
+        --muted: #aaa69a;
+        --hair: #28261f;
+        --acc: #FFEE6E;
+    }
+}
   html,
   body {
       height: 100%;

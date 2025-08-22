@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Index — Magnetic Letters</title>
+<title>Lumen — Magnetic Letters</title>
 <style>
   html, body { height: 100%; margin: 0; background: transparent; }
   .l { display: inline-block; will-change: transform; transition: transform .08s ease-out; }
@@ -11,9 +11,9 @@
 <link href="/resources/styles/branding.css" rel="stylesheet">
 </head>
 <body>
-  <div id="stage" class="stage" aria-label="Magnetic Index logo. Move mouse/touch to repel letters.">
+  <div id="stage" class="stage" aria-label="Magnetic Lumen logo. Move mouse/touch to repel letters.">
     <div class="logo">
-      <span class="l i">I</span><span class="l rest">n</span><span class="l rest">d</span><span class="l rest">e</span><span class="l rest">x</span>
+      <span class="l i">L</span><span class="l rest">u</span><span class="l rest">m</span><span class="l rest">e</span><span class="l rest">n</span>
     </div>
     <div class="hint">Move pointer to push letters • Arrows to move the field</div>
   </div>
@@ -60,7 +60,6 @@
     const r = stage.getBoundingClientRect();
     apply(e.clientX - r.left, e.clientY - r.top);
   });
-  stage.addEventListener('pointerleave', () => { center(); });
 
   // Keyboard move for accessibility
   stage.tabIndex = 0;
@@ -77,11 +76,11 @@
     apply(Math.max(0, Math.min(r.width, x)), Math.max(0, Math.min(r.height, y)));
   });
 
-  window.addEventListener('resize', () => { measure(); center(); });
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { measure(); center(); });
+  window.addEventListener('resize', () => { measure(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { measure();  });
 
   // init
-  measure(); center();
+  measure(); 
 })();
 </script>
 </body>
