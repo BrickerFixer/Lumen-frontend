@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="resources/fonts/firasans-extra-condensed-googlefonts.css" rel="stylesheet">
+  <title>Lumen — About</title>
+  <link href="resources/styles/universal.css" rel="stylesheet">
+  <style>
+    .content {
+      text-align: left;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 24px 0;
+    }
+    .content h1 {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .content h2 {
+      margin-top: 24px;
+      color: var(--fg);
+    }
+    .content p {
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .content ul {
+      line-height: 1.6;
+      margin-bottom: 16px;
+      padding-left: 20px;
+    }
+    .content li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <header id="hdr" class="hdr" style="--hdr-h:72px">
+    <div class="hdr-inner">
+      <div class="bar">
+        <a href="/" aria-label="Lumen home"><img class="logo-img" src="resources/service-icons/mini-mini.png" alt="Lumen"></a>
+        <div style="display:flex; gap:8px;">
+          <button id="fastlaneBtn" class="icon-btn" aria-label="Fastlane">
+            <img class="icon" src="resources/svg/dashboard_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg">
+          </button>
+        </div>
+      </div>
+
+      <div id="fastlane" class="fastlane" aria-hidden="true">
+        <div class="fl-grid">
+          <div class="fl-item"><div class="ico"></div><span>Mail</span></div>
+          <div class="fl-item"><div class="ico"></div><span>Docs</span></div>
+          <a href="/settings"><div class="fl-item"><div class="ico"></div><span>Settings</span></div></a>
+          <div class="fl-item"><div class="ico"></div><span>Profile</span></div>
+          <div class="fl-item"><div class="ico"></div><span>Shortcuts</span></div>
+          <div class="fl-item"><div class="ico"></div><span>Labs</span></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="content">
+      <h1>About Lumen</h1>
+      
+      <p>Lumen is a true search platform designed to help you find information quickly and efficiently. Its mission is to provide a seamless search experience that connects users with the most relevant content across the web.</p>
+      
+      <h2>Vision behind this project</h2>
+      <p>I envision a world where information is accessible to everyone and is true, precise and with ability to easily proofread from multiple sources. Lumen aims to bridge the gap between ALL data sources and everyday users by providing an intuitive interface and powerful search capabilities.</p>
+      
+      <h2>How It Works</h2>
+      <p>Lumen connects to nodes that search content from various sources. When you perform a search, Lumen queries these nodes and aggregates the results to provide you with the most relevant information.</p>
+      
+      <h2>Open Source</h2>
+      <p>Lumen is built on open-source technologies and is itself open source. I believe in the power of community-driven development and welcome contributions from developers around the world. What you are currently seeing is the frontend built with simple HTML, CSS and JS. You can find its source code on <a href="https://github.com/BrickerFixer/Lumen-frontend" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
+      
+      <h2>Get in Touch</h2>
+      <p>If you have any questions, feedback, or suggestions, I'd love to hear from you. You can reach me through my <a href="https://BrickerFixer.github.io/" target="_blank" rel="noopener noreferrer">ugly blogsite</a> or by contributing to my GitHub repository.</p>
+    </div>
+  </main>
+
+  <script>
+    // Fastlane toggle
+    const hdr = document.getElementById('hdr');
+    const fastlaneBtn = document.getElementById('fastlaneBtn');
+    const fastlane = document.getElementById('fastlane');
+    let fastlaneOpen = false;
+    function applyHeaderState() {
+      hdr.classList.toggle('is-fastlane', fastlaneOpen);
+      fastlane.classList.toggle('open', fastlaneOpen);
+      fastlane.setAttribute('aria-hidden', String(!fastlaneOpen));
+    }
+    fastlaneBtn.addEventListener('click', () => { fastlaneOpen = !fastlaneOpen; applyHeaderState(); });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && fastlaneOpen) { fastlaneOpen = false; applyHeaderState(); } });
+  </script>
+</body>
+</html>

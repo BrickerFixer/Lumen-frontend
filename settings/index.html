@@ -3,285 +3,220 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Settings — Index</title>
-  <!-- If you have universal.css, include it here -->
-  <link rel="stylesheet" href="/resources/styles/universal.css">
+  <title>Lumen — Settings</title>
+  <link href="/resources/styles/universal.css" rel="stylesheet">
   <style>
-    
-    main { flex: 1 0 auto; min-width: 0; }
-    .wrap { max-width: 960px; margin: 16px auto; padding: 0 16px; }
-
-    h1 { font-size: 22px; margin: 0 0 12px; }
-    .tabs {
-      display: flex; gap: 8px; border-bottom: 1px solid var(--hair);
-      margin-bottom: 12px; overflow-x: auto;
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
-    .tab {
-      padding: 8px 10px; border: 1px solid transparent; border-bottom: none;
-      color: var(--muted); cursor: pointer; user-select: none;
+    .page {
+      width: min(92vw, 640px);
+      margin: 0 auto;
+      padding: var(--hdr-h) 0 24px;
+      flex: 1 0 auto;
     }
-    .tab[aria-selected="true"] {
-      color: var(--fg); border-color: var(--hair); border-bottom-color: var(--bg);
-      background: var(--bg);
+    .page-header {
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--hair);
     }
-
-    .card {
-      border: 1px solid var(--hair); background: var(--bg); padding: 14px;
+    .page-header h1 {
+      margin: 0;
+      font-size: 2rem;
     }
-
-    .row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; margin-bottom: 12px; }
-    .col { display: grid; gap: 4px; }
-    .lbl { font-weight: 600; }
-    .hint { font-size: 12px; color: var(--muted); }
-
-    /* Switch (accessible checkbox) */
-    .switch {
-      --w: 42px; --h: 24px;
-      position: relative; width: var(--w); height: var(--h);
+    .settings-group {
+      margin-bottom: 24px;
     }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-      position: absolute; inset: 0; border: 1px solid var(--hair);
-      background: color-mix(in oklab, var(--bg), #000 6%);
-      transition: background .2s ease, border-color .2s ease;
+    .settings-group h2 {
+      margin-top: 0;
+      font-size: 1.25rem;
+      color: var(--fg);
     }
-    .slider::before {
-      content: ""; position: absolute;
-      width: calc(var(--h) - 4px); height: calc(var(--h) - 4px);
-      background: var(--bg); border: 1px solid var(--hair);
-      transition: transform .2s ease;
+    .setting {
+      margin-bottom: 16px;
     }
-    .switch input:checked + .slider {
-      background: var(--acc); border-color: var(--acc);
+    .setting label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 500;
     }
-    .switch input:checked + .slider::before {
-      transform: translateX(calc(var(--w) - var(--h)));
+    .setting .description {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 4px;
     }
-
-    textarea {
-      width: 100%; min-height: 160px; resize: vertical;
-      border: 1px solid var(--hair); background: var(--bg); color: var(--fg);
-      padding: 10px; font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    }
-
-    .actions { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
-    .btn {
-      border: 1px solid var(--hair); background: var(--bg); color: var(--fg);
-      padding: 6px 10px; cursor: pointer;
-    }
-    .status { font-size: 12px; color: var(--muted); margin-left: auto; }
-
-    footer.site-footer {
-      border-top: 1px solid var(--hair); color: var(--muted);
-      font-size: 12px; margin-top: 16px;
-    }
-    .foot-inner {
-      max-width: 1240px; margin: 0 auto; padding: 10px 16px;
-      display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap;
-    }
-    .foot-links { display: flex; gap: 10px; flex-wrap: wrap; }
-    .foot-links a { color: inherit; text-decoration: none; }
-    .foot-links a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-    <header id="hdr" class="hdr" style="--hdr-h:72px">
+  <header id="hdr" class="hdr" style="--hdr-h:72px">
     <div class="hdr-inner">
       <div class="bar">
-        <a href="/" aria-label="Index home"><img class="logo-img" src="/resources/service-icons/mini-mini.png" alt="Index"></a>
+        <a href="/" aria-label="Lumen home">
+          <img class="logo-img" src="/resources/service-icons/mini-mini.png" alt="Lumen">
+        </a>
+        <div style="display:flex; gap:8px;">
+          <button id="fastlaneBtn" class="icon-btn" aria-label="Fastlane">
+            <img class="icon" src="/resources/svg/dashboard_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg">
+          </button>
+        </div>
+      </div>
+
+      <div id="fastlane" class="fastlane" aria-hidden="true">
+        <div class="fl-grid">
+          <div class="fl-item"><div class="ico"></div><span>Mail</span></div>
+          <div class="fl-item"><div class="ico"></div><span>Docs</span></div>
+          <a href="/settings"><div class="fl-item"><div class="ico"></div><span>Settings</span></div></a>
+          <div class="fl-item"><div class="ico"></div><span>Profile</span></div>
+          <div class="fl-item"><div class="ico"></div><span>Shortcuts</span></div>
+          <div class="fl-item"><div class="ico"></div><span>Labs</span></div>
+        </div>
       </div>
     </div>
   </header>
 
-  <main>
-    <div class="wrap">
-      <h1>Settings</h1>
-
-      <nav class="tabs" role="tablist" aria-label="Settings tabs">
-        <button class="tab" role="tab" aria-selected="true" aria-controls="tab-personalization" id="tabBtnPersonalization">
-          Personalization
-        </button>
-        <!-- Future tabs:
-        <button class="tab" role="tab" aria-selected="false" disabled>Search</button>
-        <button class="tab" role="tab" aria-selected="false" disabled>Privacy</button>
-        -->
-      </nav>
-
-      <section id="tab-personalization" class="card" role="tabpanel" aria-labelledby="tabBtnPersonalization">
-        <!-- Doodles -->
-        <div class="row">
-          <div class="col">
-            <div class="lbl">Doodles</div>
-            <div class="hint">Show interactive doodles in the homepage logo area.</div>
-          </div>
-          <label class="switch" title="Toggle doodles">
-            <input id="setDoodles" type="checkbox" />
-            <span class="slider" aria-hidden="true"></span>
-          </label>
-        </div>
-        <!-- Logo -->
-        <div class="row">
-          <div class="col">
-            <div class="lbl">Logo</div>
-            <div class="hint">Show the logo area on the homepage.</div>
-          </div>
-          <label class="switch" title="Toggle logo">
-            <input id="setLogo" type="checkbox" />
-            <span class="slider" aria-hidden="true"></span>
-          </label>
-        </div>
-        <!-- Islands -->
-        <div class="row">
-          <div class="col">
-            <div class="lbl">Islands</div>
-            <div class="hint">Show knowledge islands and supporting blocks on the results page.</div>
-          </div>
-          <label class="switch" title="Toggle islands">
-            <input id="setIslands" type="checkbox" />
-            <span class="slider" aria-hidden="true"></span>
-          </label>
-        </div>
-
-        <!-- Custom CSS -->
-        <div class="col" style="margin-top: 8px;">
-          <div class="lbl">Custom CSS</div>
-          <div class="hint">Your CSS will be injected on the homepage and the results page.</div>
-        </div>
-        <div style="margin-top:6px;">
-          <textarea id="setCustomCss" placeholder="/* Example */
-body { letter-spacing: 0.2px; }
-#logo { filter: saturate(1.1); }"></textarea>
-          <div class="actions">
-            <button id="btnApply" class="btn" type="button">Apply</button>
-            <button id="btnReset" class="btn" type="button">Reset to defaults</button>
-            <span id="saveStatus" class="status">Saved</span>
-          </div>
-        </div>
-      </section>
+  <main class="page">
+    <div class="page-header">
+      <h1>Settings (WIP, page filled with placeholders)</h1>
+    </div>
+    
+    <div class="settings-group">
+      <h2>General</h2>
+      <div class="setting">
+        <label for="theme">Theme</label>
+        <select id="theme" class="sel">
+          <option value="system">System default</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+        <div class="description">Choose the theme for the application</div>
+      </div>
+      
+      <div class="setting">
+        <label for="language">Language</label>
+        <select id="language" class="sel">
+          <option value="en">English</option>
+          <option value="es">Spanish</option>
+          <option value="fr">French</option>
+        </select>
+        <div class="description">Select your preferred language</div>
+      </div>
+    </div>
+    
+    <div class="settings-group">
+      <h2>Search</h2>
+      <div class="setting">
+        <label for="defaultNode">Default Node</label>
+        <input type="text" id="defaultNode" class="flt-input" value="http://localhost:3000">
+        <div class="description">The default node to use for searches</div>
+      </div>
+      
+      <div class="setting">
+        <label>
+          <input type="checkbox" id="safeSearch"> Safe Search
+        </label>
+        <div class="description">Filter explicit content from search results</div>
+      </div>
+    </div>
+    
+    <div class="settings-group">
+      <h2>Privacy</h2>
+      <div class="setting">
+        <label>
+          <input type="checkbox" id="doNotTrack"> Do Not Track
+        </label>
+        <div class="description">Send "Do Not Track" requests with your searches</div>
+      </div>
+      
+      <div class="setting">
+        <label>
+          <input type="checkbox" id="clearHistory"> Clear search history on exit
+        </label>
+        <div class="description">Automatically clear your search history when you close the browser</div>
+      </div>
     </div>
   </main>
   <script>
-    // -------- Settings state (localStorage) ----------
-    const DEFAULTS = Object.freeze({
-      doodles: true,
-      logo: true,
-      islands: true,
-      customCSS: ''
-    });
-
-    const KEY = 'indexSettings';
-
-    function loadSettings() {
-      try {
-        const raw = localStorage.getItem(KEY);
-        if (!raw) return { ...DEFAULTS };
-        const obj = JSON.parse(raw);
-        return { ...DEFAULTS, ...obj };
-      } catch {
-        return { ...DEFAULTS };
-      }
+    // Fastlane toggle
+    const hdr = document.getElementById('hdr');
+    const fastlaneBtn = document.getElementById('fastlaneBtn');
+    const fastlane = document.getElementById('fastlane');
+    let fastlaneOpen = false;
+    function applyHeaderState() {
+      hdr.classList.toggle('is-fastlane', fastlaneOpen);
+      fastlane.classList.toggle('open', fastlaneOpen);
+      fastlane.setAttribute('aria-hidden', String(!fastlaneOpen));
     }
-
-    function saveSettings(s) {
-      localStorage.setItem(KEY, JSON.stringify(s));
-      // Broadcast to other tabs
-      window.dispatchEvent(new CustomEvent('index:settings-changed', { detail: s }));
-    }
-
-    // -------- UI wiring ----------
-    const elDoodles = document.getElementById('setDoodles');
-    const elLogo = document.getElementById('setLogo');
-    const elIslands = document.getElementById('setIslands');
-    const elCss = document.getElementById('setCustomCss');
-    const elApply = document.getElementById('btnApply');
-    const elReset = document.getElementById('btnReset');
-    const saveStatus = document.getElementById('saveStatus');
-
-    const customStyleId = 'index-custom-style';
-    function applyCustomCss(css) {
-      let tag = document.getElementById(customStyleId);
-      if (!tag) {
-        tag = document.createElement('style');
-        tag.id = customStyleId;
-        document.head.appendChild(tag);
-      }
-      tag.textContent = css || '';
-    }
-
-    function setSaved(msg = 'Saved') {
-      saveStatus.textContent = msg;
-      clearTimeout(setSaved._t);
-      setSaved._t = setTimeout(() => saveStatus.textContent = 'Saved', 800);
-    }
-
-    // Load -> UI
-    let settings = loadSettings();
-    elDoodles.checked = !!settings.doodles;
-    elLogo.checked = !!settings.logo;
-    elIslands.checked = !!settings.islands;
-    elCss.value = settings.customCSS || '';
-    applyCustomCss(settings.customCSS);
-
-    // Auto-save on toggle
-    elDoodles.addEventListener('change', () => {
-      settings.doodles = elDoodles.checked;
-      saveSettings(settings); setSaved();
-    });
-    elLogo.addEventListener('change', () => {
-      settings.logo = elLogo.checked;
-      saveSettings(settings); setSaved();
-    });
-    elIslands.addEventListener('change', () => {
-      settings.islands = elIslands.checked;
-      saveSettings(settings); setSaved();
-    });
-
-    // Apply custom CSS
-    elApply.addEventListener('click', () => {
-      settings.customCSS = elCss.value || '';
-      applyCustomCss(settings.customCSS);
-      saveSettings(settings); setSaved('Applied');
-    });
-
-    // Reset
-    elReset.addEventListener('click', () => {
-      settings = { ...DEFAULTS };
-      elDoodles.checked = settings.doodles;
-      elLogo.checked = settings.logo;
-      elIslands.checked = settings.islands;
-      elCss.value = settings.customCSS;
-      applyCustomCss(settings.customCSS);
-      saveSettings(settings); setSaved('Defaults restored');
-    });
-
-    // Footer version info (optional)
-    (function footerInfo() {
+    fastlaneBtn.addEventListener('click', () => { fastlaneOpen = !fastlaneOpen; applyHeaderState(); });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && fastlaneOpen) { fastlaneOpen = false; applyHeaderState(); } });
+    
+    // Version info
+    (function() {
       const feSpan = document.getElementById('feVersion');
       const nodeSpan = document.getElementById('nodeVersion');
+      
+      // Frontend version
       const feMeta = document.querySelector('meta[name="app:version"]');
       const FRONTEND_VERSION = (window.__FRONTEND_VERSION__ || (feMeta && feMeta.content) || 'dev').trim();
       feSpan.textContent = `Frontend v${FRONTEND_VERSION}`;
-
-      async function getJSON(url, ms = 2500) {
-        const ctrl = new AbortController();
-        const t = setTimeout(() => ctrl.abort(), ms);
+      
+      // Node info
+      function getDefaultNode() {
         try {
-          const res = await fetch(url, { signal: ctrl.signal });
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          return await res.json();
-        } finally { clearTimeout(t); }
+          const u = new URL(window.location.href);
+          return u.searchParams.get('node') || 'http://localhost:3000';
+        } catch {
+          return 'http://localhost:3000';
+        }
       }
-      const node = new URL(window.location.href).searchParams.get('node') || 'http://localhost:3000';
-      (async () => {
+      
+      async function fetchNodeInfo(nodeBase) {
+        const info = { name: '', version: '' };
+        
+        async function getJSON(url, ms = 2500) {
+          const ctrl = new AbortController();
+          const t = setTimeout(() => ctrl.abort(), ms);
+          try {
+            const res = await fetch(url, { signal: ctrl.signal });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return await res.json();
+          } finally {
+            clearTimeout(t);
+          }
+        }
+        
         try {
-          const meta = await getJSON(node + '/metadata');
-          const name = meta.name || new URL(node).host;
-          const version = meta.version || meta.nodeVersion || '';
-          nodeSpan.textContent = `Node: ${name}${version ? ' v' + version : ''}`;
+          const meta = await getJSON(nodeBase + '/metadata');
+          info.name = meta && (meta.name || '');
+          info.version = (meta && (meta.version || meta.nodeVersion)) || '';
+        } catch {}
+        
+        if (!info.version) {
+          try {
+            const health = await getJSON(nodeBase + '/health');
+            info.version = (health && (health.version || health.nodeVersion)) || '';
+          } catch {}
+        }
+        
+        if (!info.name) {
+          try { info.name = new URL(nodeBase).host; } catch { info.name = nodeBase; }
+        }
+        return info;
+      }
+      
+      async function updateNodeFooter(nodeBase) {
+        try {
+          const info = await fetchNodeInfo(nodeBase);
+          const verText = info.version ? ` v${info.version}` : '';
+          nodeSpan.textContent = `Node: ${info.name}${verText}`;
         } catch {
           nodeSpan.textContent = 'Node: offline';
         }
-      })();
+      }
+      
+      const initialNode = getDefaultNode();
+      updateNodeFooter(initialNode);
     })();
   </script>
 </body>
