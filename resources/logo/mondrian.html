@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumen Mondrian</title>
+    <link href="/resources/styles/branding.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: #f5f5f0;
+            font-family: 'Fira Sans Extra Condensed', sans-serif;
+        }
+
+        #canvas {
+            display: block;
+        }
+
+        .logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 10;
+            mix-blend-mode: difference;
+            color: white;
+        }
+        .hint {
+            mix-blend-mode: difference;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="logo">
+        Lumen
+    </div>
+    <div class="hint">Lumen loves: <a href="https://en.wikipedia.org/wiki/Mondrian" target="_blank" style="color: inherit;">Mondrian</a></div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        const colors = ['#000000', '#FEBC2F', '#d62828', '#003049', '#f5f5f0'];
+        const lineWidth = 8;
+
+        class Rectangle {
+            constructor(x, y, w, h) {
+                this.x = x;
+                this.y = y;
+                this.w = w;
+                this.h = h;
+                this.targetX = x;
+                this.targetY = y;
+                this.targetW = w;
+                this.targetH = h;
+                this.color = this.pickColor();
+                this.targetColor = this.color;
+                this.colorTransition = 0;
+            }
+
+            pickColor() {
+                return Math.random() > 0.6 ? colors[Math.floor(Math.random() * colors.length)] : '#f5f5f0';
+            }
+
+            update() {
+                this.x += (this.targetX - this.x) * 0.08;
+                this.y += (this.targetY - this.y) * 0.08;
+                this.w += (this.targetW - this.w) * 0.08;
+                this.h += (this.targetH - this.h) * 0.08;
+
+                if (this.colorTransition < 1) {
+                    this.color = this.targetColor;
+                } else {
+                    this.color = this.targetColor;
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.w, this.h);
+                
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = lineWidth;
+                ctx.strokeRect(this.x, this.y, this.w, this.h);
+            }
+
+            contains(px, py) {
+                return px >= this.x && px <= this.x + this.w && py >= this.y && py <= this.y + this.h;
+            }
+        }
+
+        let rectangles = [];
+
+        function subdivide(rect, depth = 0) {
+            if (depth > 3 || rect.w < 60 || rect.h < 60) {
+                rectangles.push(rect);
+                return;
+            }
+
+            if (Math.random() > 0.5) {
+                const splitX = rect.x + rect.w * (0.3 + Math.random() * 0.4);
+                subdivide(new Rectangle(rect.x, rect.y, splitX - rect.x, rect.h), depth + 1);
+                subdivide(new Rectangle(splitX, rect.y, rect.x + rect.w - splitX, rect.h), depth + 1);
+            } else {
+                const splitY = rect.y + rect.h * (0.3 + Math.random() * 0.4);
+                subdivide(new Rectangle(rect.x, rect.y, rect.w, splitY - rect.y), depth + 1);
+                subdivide(new Rectangle(rect.x, splitY, rect.w, rect.y + rect.h - splitY), depth + 1);
+            }
+        }
+
+        function init() {
+            rectangles = [];
+            subdivide(new Rectangle(0, 0, width, height));
+        }
+
+        function regenerate() {
+            const oldRects = rectangles;
+            rectangles = [];
+            subdivide(new Rectangle(0, 0, width, height));
+            
+            rectangles.forEach(rect => {
+                rect.x += (Math.random() - 0.5) * 50;
+                rect.y += (Math.random() - 0.5) * 50;
+                rect.targetColor = rect.pickColor();
+                rect.colorTransition = 0;
+            });
+        }
+
+        function animate() {
+            ctx.fillStyle = '#f5f5f0';
+            ctx.fillRect(0, 0, width, height);
+
+            rectangles.forEach(rect => {
+                rect.update();
+                rect.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            init();
+        });
+
+        init();
+        animate();
+
+        setInterval(regenerate, 8000);
+    </script>
+</body>
+</html>

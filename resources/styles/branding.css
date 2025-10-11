@@ -1,4 +1,4 @@
-  @import url('/resources/fonts/firasans-extra-condensed-googlefonts.css');
+
 
 :root {
     --bg: #ffffff;
@@ -7,6 +7,10 @@
     --hair: #ebe9e5;
     --acc: #FEBC2F;
     --hdr-h: 60px;
+}
+@font-face {
+    font-family: 'Fira Sans Extra Condensed';
+    src: url('/resources/fonts/FiraSansExtraCondensed-Regular.ttf');
 }
 
 @media (prefers-color-scheme: dark) {
@@ -38,13 +42,13 @@
 
   .logo {
       position: relative;
+    
       font-family: "Fira Sans Extra Condensed", sans-serif;
       font-weight: 400;
       letter-spacing: .5px;
       line-height: 1;
       font-size: 96px;
       color: #fff;
-      /* white text for dark backgrounds */
       user-select: none;
       transform-origin: center;
       will-change: transform;
@@ -56,7 +60,7 @@
       color: var(--acc);
   }
 
-  /* blue Index I */
+  
   .logo .rest {
       color: var(--fg);
   }

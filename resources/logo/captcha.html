@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumen CAPTCHA Celebration</title>
+    <link rel="stylesheet" href="/resources/styles/branding.css">
+    <style>
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .hint {
+            mix-blend-mode: difference;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="stage" class="stage" aria-live="polite" aria-label="Lumen CAPTCHA logo">
+        <canvas id="captchaCanvas"></canvas>
+        <div class="hint">Lumen thinks CAPTCHA is not doing its job.</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('captchaCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            drawCaptcha();
+        }
+        
+        function drawCaptcha() {
+            const w = canvas.width;
+            const h = canvas.height;
+            
+            const gradient = ctx.createLinearGradient(0, 0, w, h);
+            const colors = [
+                ['#FF6B6B', '#4ECDC4'],
+                ['#A8E6CF', '#FFD93D'],
+                ['#95E1D3', '#F38181'],
+                ['#AA96DA', '#FCBAD3'],
+                ['#6C5CE7', '#A29BFE'],
+                ['#00B894', '#00CEC9']
+            ];
+            const colorPair = colors[Math.floor(Math.random() * colors.length)];
+            gradient.addColorStop(0, colorPair[0]);
+            gradient.addColorStop(1, colorPair[1]);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, w, h);
+            
+            for (let i = 0; i < 150; i++) {
+                ctx.strokeStyle = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255},0.3)`;
+                ctx.lineWidth = Math.random() * 3;
+                ctx.beginPath();
+                ctx.moveTo(Math.random() * w, Math.random() * h);
+                ctx.lineTo(Math.random() * w, Math.random() * h);
+                ctx.stroke();
+            }
+            
+            ctx.save();
+            ctx.translate(w / 2, h / 2);
+            
+            const text = 'Lumen';
+            ctx.font = '96px "Fira Sans Extra Condensed", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            for (let i = 0; i < text.length; i++) {
+                ctx.save();
+                
+                const offsetX = (i - 2) * 55 + (Math.random() - 0.5) * 20;
+                const offsetY = (Math.random() - 0.5) * 30;
+                ctx.translate(offsetX, offsetY);
+                
+                const rotation = (Math.random() - 0.5) * 0.4;
+                ctx.rotate(rotation);
+                
+                const skewX = (Math.random() - 0.5) * 0.3;
+                const skewY = (Math.random() - 0.5) * 0.2;
+                ctx.transform(1, skewY, skewX, 1, 0, 0);
+                
+                
+                ctx.fillStyle = '#fff';
+                ctx.fillText(text[i], 0, 0);
+                
+                ctx.restore();
+            }
+            
+            ctx.restore();
+            
+            for (let i = 0; i < 200; i++) {
+                ctx.fillStyle = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255},0.6)`;
+                ctx.beginPath();
+                ctx.arc(Math.random() * w, Math.random() * h, Math.random() * 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            const imageData = ctx.getImageData(0, 0, w, h);
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                if (Math.random() > 0.95) {
+                    const noise = (Math.random() - 0.5) * 100;
+                    data[i] += noise;
+                    data[i + 1] += noise;
+                    data[i + 2] += noise;
+                }
+            }
+            ctx.putImageData(imageData, 0, 0);
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        setInterval(() => {
+            drawCaptcha();
+        }, 3000);
+    </script>
+</body>
+</html>

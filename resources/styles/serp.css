@@ -4,24 +4,28 @@
   --colW: 556px;
 }
 
-/* Page grid */
+/* Page grid - Converted to Flexbox */
 .page {
   margin: 12px auto;
   padding: 0 16px;
-  display: grid;
-  grid-template-columns: var(--railW) minmax(0, var(--colW)) minmax(0, var(--colW));
+  display: flex; /* CHANGED: from grid */
+  justify-content: center; /* New: Centers the columns in the viewport */
   gap: 16px;
 }
 
-/* Types rail */
+/* Types rail - now a flex item */
 .types {
   position: sticky;
   top: calc(var(--hdr-h) + 12px);
   align-self: start;
+  flex: 0 0 var(--railW); /* New: Prevents growing/shrinking, sets base width */
+  
 }
 .type {
-  display: grid;
-  place-items: center;
+  display: flex; /* CHANGED: from grid */
+  flex-direction: column; /* New: Stacks icon and label vertically */
+  align-items: center; /* New: Horizontally centers content */
+  justify-content: center; /* New: Vertically centers content */
   gap: 6px;
   padding: 10px;
   text-decoration: none;
@@ -35,8 +39,20 @@
 .type[aria-current="page"] .ico { border-color: var(--acc); background: var(--acc); }
 .type[aria-current="page"] .lbl { color: var(--fg); }
 
-/* Main column */
-.main { min-width: 0; }
+/* Main column - now a flex item */
+.main {
+  min-width: 0; /* Prevents content overflow */
+  flex: 1 1 var(--colW); /* New: Defines how the column grows and shrinks */
+  max-width: var(--colW); /* New: Enforces the max-width from the original grid */
+}
+
+/* Aside column (implicit 3rd column) - now a flex item */
+.aside {
+  flex: 1 1 var(--colW);
+  max-width: var(--colW);
+  min-width: 0;
+  max-height: max-content;
+}
 
 /* Island cards (SERP widgets) */
 .island { border: 1px solid var(--hair); background: var(--bg); margin-bottom: 12px; }
@@ -45,8 +61,18 @@
   padding: 8px 8px 8px 8px; width: 100%;
   border-bottom: 1px solid var(--hair);
 }
-.island .inner { display: grid; grid-template-columns: 140px 1fr; gap: 12px; }
-.thumb { width: 140px; height: 92px; object-fit: cover; display: block; background: #dfe3e6; }
+.island .inner {
+  display: flex; /* CHANGED: from grid */
+  gap: 12px;
+}
+.thumb {
+  width: 140px;
+  height: 92px;
+  object-fit: cover;
+  display: block;
+  background: #dfe3e6;
+  flex-shrink: 0; /* New: Prevents the thumbnail from shrinking */
+}
 .title { font-size: 17px; margin: 0 0 4px; font-weight: 600; }
 .meta { font-size: 13px; color: var(--muted); }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
@@ -82,23 +108,60 @@
   justify-content: center;
 }
 
+.serp-layout {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}
+
 /* Responsive (SERP) */
 @media (max-width: 940px) {
-  .page { grid-template-columns: var(--railW) 1fr; }
-  .aside { display: none; }
+  /* No changes to .page needed; flexbox adapts automatically */
+  .aside { max-width: none; }
+  .serp-layout {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+  /* Allow main column to grow beyond its original max-width to fill the space,
+     replicating the behavior of '1fr' in the original grid layout. */
+  .main { max-width: none; }
 }
 @media (max-width: 700px) {
-  .page { grid-template-columns: 1fr; }
+  .page {
+    flex-direction: column; /* CHANGED: Stack page sections vertically */
+    padding: 0;
+    margin: 0;
+    gap: 0;
+  }
   .types {
     position: static;
     display: flex;
-    gap: 6px;
     flex-wrap: nowrap;
     overflow-x: auto;
+    align-self: auto;
+    padding-left: 8px;
+    padding-right: 8px;
+    gap: 16px;
   }
-  .type { margin: 0; width: 100px; }
-  .island .inner { grid-template-columns: 1fr; }
+  .type { margin: 0; padding: 16px;}
+  .type .ico {display: none;}
+  .island .inner {
+    flex-direction: column; /* CHANGED: Stack card content vertically */
+  }
   .thumb { width: 100%; height: 140px; }
+  :root{ --railW: auto; }
+  #results .results-group {
+    border-left: none;
+    border-right: none;
+  }
+  .island {
+    border-top: 1px solid var(--hair);
+    border-bottom: 1px solid var(--hair);
+    border-left: none;
+    border-right: none;
+  }
+  .lbl { margin-bottom: 0 !important;}
 }
 
 .search-table{

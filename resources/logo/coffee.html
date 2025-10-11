@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barista Latte Art</title>
+    <link rel="stylesheet" href="/resources/styles/branding.css">
+    <style>
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .stage {
+            background: linear-gradient(135deg, #6F4E37 0%, #3E2723 100%);
+        }
+    </style>
+</head>
+<body>
+    <div id="stage" class="stage" aria-live="polite" aria-label="Barista Latte Art">
+        <canvas id="canvas"></canvas>
+        <div id="logo" class="logo"><span class="rest">Lumen</span></div>
+        <div class="hint">Lumen loves: <a href="https://en.wikipedia.org/wiki/Latte_art" target="_blank" style="color: inherit;">Latte art</a></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const logo = document.getElementById('logo');
+        
+        let particles = [];
+        let mouse = { x: 0, y: 0 };
+        let animationId;
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initParticles();
+        }
+
+        function initParticles() {
+            particles = [];
+            const logoRect = logo.getBoundingClientRect();
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            const fontSize = parseInt(window.getComputedStyle(logo).fontSize);
+            tempCanvas.width = logoRect.width;
+            tempCanvas.height = logoRect.height;
+            
+            tempCtx.fillStyle = 'white';
+            tempCtx.font = `${fontSize}px "Fira Sans Extra Condensed", sans-serif`;
+            tempCtx.textAlign = 'center';
+            tempCtx.textBaseline = 'middle';
+            tempCtx.fillText('Lumen', tempCanvas.width / 2, tempCanvas.height / 2);
+            
+            const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+            const gap = 3;
+            
+            for (let y = 0; y < tempCanvas.height; y += gap) {
+                for (let x = 0; x < tempCanvas.width; x += gap) {
+                    const index = (y * tempCanvas.width + x) * 4;
+                    const alpha = imageData.data[index + 3];
+                    
+                    if (alpha > 128) {
+                        const particle = {
+                            x: logoRect.left + x,
+                            y: logoRect.top + y,
+                            baseX: logoRect.left + x,
+                            baseY: logoRect.top + y,
+                            vx: 0,
+                            vy: 0,
+                            size: 2 + Math.random() * 1.5
+                        };
+                        particles.push(particle);
+                    }
+                }
+            }
+            
+            logo.style.opacity = '0';
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach(p => {
+                const dx = mouse.x - p.x;
+                const dy = mouse.y - p.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const maxDistance = 10;
+                
+                if (distance < maxDistance) {
+                    const force = (maxDistance - distance) / maxDistance;
+                    const angle = Math.atan2(dy, dx);
+                    p.vx -= Math.cos(angle) * force * 8;
+                    p.vy -= Math.sin(angle) * force * 8;
+                }
+                
+                p.vx *= 0.92;
+                p.vy *= 0.92;
+                
+                p.x += p.vx;
+                p.y += p.vy;
+                
+                ctx.fillStyle = `rgba(255, 255, 255, 1)`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            animationId = requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            mouse.x = e.touches[0].clientX;
+            mouse.y = e.touches[0].clientY;
+        });
+
+        window.addEventListener('resize', resize);
+
+        setTimeout(() => {
+            resize();
+            animate();
+        }, 100);
+    </script>
+</body>
+</html>

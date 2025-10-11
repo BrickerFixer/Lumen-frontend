@@ -40,26 +40,9 @@
       </div>
 
       <div id="fastlane" class="fastlane" aria-hidden="true">
-        <div class="fl-grid">
-          <div class="fl-item">
-            <div class="ico"></div><span>Mail</span>
-          </div>
-          <div class="fl-item">
-            <div class="ico"></div><span>Docs</span>
-          </div>
-          <div class="fl-item">
-            <div class="ico"></div><span>Settings</span>
-          </div>
-          <div class="fl-item">
-            <div class="ico"></div><span>Profile</span>
-          </div>
-          <div class="fl-item">
-            <div class="ico"></div><span>Shortcuts</span>
-          </div>
-          <div class="fl-item">
-            <div class="ico"></div><span>Labs</span>
-          </div>
-        </div>
+        <h1>"Livin' the life in the Fast Lane..."</h1>
+        <h2>Fastlane is a go-to place for your searches and web surfing.</h2>
+        <p>Be it your pinned searches, themes, backgrounds, nodes, preferences and more, they will stay in this place. Stay tuned! It's not really a priority right now, as I need to fix other issues and experience problems.</p>
       </div>
     </div>
   </header>
@@ -69,18 +52,19 @@
     <nav id="typesNav" class="types" aria-label="Search types">
       <!-- Methods will be rendered here -->
     </nav>
+    <div id="serp-layout" class="serp-layout">
+      <!-- Main column: dynamic islands + results -->
+      <section id="main" class="main" aria-label="Main results">
+        <div id="mainIslands"></div>
+        <div id="results"></div>
+        <div id="pager" class="pager" style="display:none;"></div>
+      </section>
 
-    <!-- Main column: dynamic islands + results -->
-    <section id="main" class="main" aria-label="Main results">
-      <div id="mainIslands"></div>
-      <div id="results"></div>
-      <div id="pager" class="pager" style="display:none;"></div>
-    </section>
-
-    <!-- Misc/supporting islands -->
-    <aside id="supportingIslands" class="aside" aria-label="Related">
-      <!-- Supporting islands will be rendered here -->
-    </aside>
+      <!-- Misc/supporting islands -->
+      <aside id="supportingIslands" class="aside" aria-label="Related">
+        <!-- Supporting islands will be rendered here -->
+      </aside>
+    </div>
   </main>
 
   <script>
@@ -129,14 +113,18 @@
     let filterValues = {};
 
     const typesNav = document.getElementById('typesNav');
-    const resultsDiv = document.getElementById('results');
-    const mainIslandsDiv = document.getElementById('mainIslands');
-    const supportingIslands = document.getElementById('supportingIslands');
-    const pagerDiv = document.getElementById('pager');
     const searchForm = document.getElementById('searchForm');
     const qInput = document.getElementById('q');
     const goBtn = document.getElementById('goBtn');
     const suggestionsDiv = document.getElementById('suggestions');
+    const layoutDiv = document.getElementById('serp-layout');
+    
+    // These elements can be replaced, so we use `let` and re-assign them.
+    let resultsDiv = document.getElementById('results');
+    let mainIslandsDiv = document.getElementById('mainIslands');
+    let supportingIslands = document.getElementById('supportingIslands');
+    let pagerDiv = document.getElementById('pager');
+
 // Portal the suggestions out of header to avoid clipping
 document.body.appendChild(suggestionsDiv);
 Object.assign(suggestionsDiv.style, {
@@ -421,10 +409,21 @@ function getMethodDescription(id) {
       });
     }
 
-    function restoreDefaultResultsLayout() {
-      mainIslandsDiv.innerHTML = '';
-      resultsDiv.innerHTML = '';
-      supportingIslands.innerHTML = '';
+    function restoreDefaultSerpLayout() {
+      layoutDiv.innerHTML = `
+        <section id="main" class="main" aria-label="Main results">
+          <div id="mainIslands"></div>
+          <div id="results"></div>
+          <div id="pager" class="pager" style="display:none;"></div>
+        </section>
+        <aside id="supportingIslands" class="aside" aria-label="Related">
+        </aside>
+      `;
+      // Re-assign variables to the new DOM elements
+      mainIslandsDiv = document.getElementById('mainIslands');
+      resultsDiv = document.getElementById('results');
+      supportingIslands = document.getElementById('supportingIslands');
+      pagerDiv = document.getElementById('pager');
     }
 
     function selectMethod(method) {
@@ -432,7 +431,7 @@ function getMethodDescription(id) {
       currentPage = 1;
       renderMethods();
       renderFilters();
-      restoreDefaultResultsLayout();
+      restoreDefaultSerpLayout();
       renderPagination(); // Show/hide pager according to capabilities
     }
 
@@ -487,6 +486,7 @@ function getMethodDescription(id) {
     }
 
     function setSearchingState() {
+      if (!resultsDiv) return;
       resultsDiv.innerHTML = '<div class="meta" style="padding:10px 0 6px 16px;">Searching...</div>';
     }
 
@@ -498,8 +498,9 @@ function getMethodDescription(id) {
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.set('q', query);
       history.replaceState({}, '', newUrl);
-
-      restoreDefaultResultsLayout();
+      
+      // Restore the default layout structure and re-wire element variables.
+      restoreDefaultSerpLayout();
       setSearchingState();
 
       let body = { query, method: selectedMethod };
@@ -536,23 +537,27 @@ function getMethodDescription(id) {
         body: JSON.stringify({ query, method: selectedMethod })
       });
 
+      let usedCustomLayout = false;
+
       try {
         // Handle search results
         const searchRes = await searchPromise;
         const searchData = await searchRes.json();
 
-        // Update currentPage from response meta if present
-        if (searchData.meta && typeof searchData.meta.page === 'number') {
-          currentPage = searchData.meta.page;
-        }
-        renderPagination();
-
-        // Custom HTML layout
+        // Check for a full HTML override first
         const html = (typeof searchData.html === 'string' && searchData.html.trim()) ? searchData.html : null;
         if (html) {
-          resultsDiv.innerHTML = html;
+          layoutDiv.innerHTML = html;
+          usedCustomLayout = true;
+          // When using a custom layout, it is responsible for the entire content.
+          // We will not render the pager or islands.
         } else {
-          // Results
+          // Proceed with standard rendering into the default layout
+          if (searchData.meta && typeof searchData.meta.page === 'number') {
+            currentPage = searchData.meta.page;
+          }
+          renderPagination();
+
           const answers = Array.isArray(searchData.answers) ? searchData.answers : [];
           if (!answers.length) {
             resultsDiv.innerHTML = '<div class="meta" style="padding:10px 0 6px 16px;">No results</div>';
@@ -582,143 +587,40 @@ function getMethodDescription(id) {
           }
         }
       } catch (err) {
-        resultsDiv.innerHTML = `<div class="meta" style="padding:10px 0 6px 16px; color:#c00;">${(err && err.message) || 'Search failed'}</div>`;
+        if(resultsDiv) resultsDiv.innerHTML = `<div class="meta" style="padding:10px 0 6px 16px; color:#c00;">${(err && err.message) || 'Search failed'}</div>`;
         renderPagination();
       }
 
-      try {
-        // Handle islands
-        const islandsRes = await islandsPromise;
-        const islandsData = await islandsRes.json();
+      // Only render islands if we are using the default layout
+      if (!usedCustomLayout) {
+        try {
+          const islandsRes = await islandsPromise;
+          const islandsData = await islandsRes.json();
+          if (Array.isArray(islandsData.islands) && islandsData.islands.length) {
+            const mainIslands = islandsData.islands.filter(island => island.column === 'main' && typeof island.html === 'string');
+            const suppIslands = islandsData.islands.filter(island => island.column === 'supporting' && typeof island.html === 'string');
 
-        // Islands
-        if (Array.isArray(islandsData.islands) && islandsData.islands.length) {
-          const mainIslands = islandsData.islands.filter(island => island.column === 'main' && typeof island.html === 'string');
-          const suppIslands = islandsData.islands.filter(island => island.column === 'supporting' && typeof island.html === 'string');
+            if (mainIslandsDiv) mainIslandsDiv.innerHTML = mainIslands.map(island => `
+              <article class="island">
+                <div class="head">${island.name || ''}</div>
+                <div class="inner"><div style="grid-column: 1 / -1;">${island.html}</div></div>
+              </article>
+            `).join('');
 
-          mainIslandsDiv.innerHTML = mainIslands.map(island => `
-            <article class="island">
-              <div class="head">${island.name || ''}</div>
-              <div class="inner">
-                <div style="grid-column: 1 / -1;">
-                  ${island.html}
-                </div>
-              </div>
-            </article>
-          `).join('');
-
-          supportingIslands.innerHTML = suppIslands.map(island => `
-            <article class="island">
-              <div class="head">${island.name || ''}</div>
-              <div class="inner">
-                <div style="grid-column: 1 / -1;">
-                  ${island.html}
-                </div>
-              </div>
-            </article>
-          `).join('');
-        } else {
-          supportingIslands.innerHTML = '';
-          mainIslandsDiv.innerHTML = '';
+            if (supportingIslands) supportingIslands.innerHTML = suppIslands.map(island => `
+              <article class="island">
+                <div class="head">${island.name || ''}</div>
+                <div class="inner"><div style="grid-column: 1 / -1;">${island.html}</div></div>
+              </article>
+            `).join('');
+          }
+        } catch (err) {
+          // Silently fail islands loading - not critical
+          if (mainIslandsDiv) mainIslandsDiv.innerHTML = '';
+          if (supportingIslands) supportingIslands.innerHTML = '';
         }
-      } catch (err) {
-        // Silently fail islands loading - not critical
-        supportingIslands.innerHTML = '';
-        mainIslandsDiv.innerHTML = '';
       }
     }
-
-    // Suggestions
-    (function setupSuggestions() {
-      if (!qInput || !suggestionsDiv) return;
-
-      let list = [];
-      let selectedIdx = -1;
-      let debounceTimeout = null;
-      let lastFetchId = 0;
-
-      function showSuggestions(items) {
-        suggestionsDiv.innerHTML = '';
-        if (!items.length) {
-          suggestionsDiv.style.display = 'none';
-          return;
-        }
-        items.forEach((s, i) => {
-          const item = document.createElement('div');
-          item.className = 'suggestion-item' + (i === selectedIdx ? ' selected' : '');
-          item.textContent = s;
-          item.onclick = () => {
-            qInput.value = s;
-            suggestionsDiv.style.display = 'none';
-            qInput.focus();
-          };
-          suggestionsDiv.appendChild(item);
-        });
-        suggestionsDiv.style.display = 'block';
-      }
-
-      async function fetchSuggestions(query) {
-        if (!query) return [];
-        try {
-          const res = await fetch(NODE + '/suggest', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ partial: query })
-          });
-          if (!res.ok) return [];
-          const data = await res.json();
-          if (Array.isArray(data.suggestions)) return data.suggestions;
-          return [];
-        } catch {
-          return [];
-        }
-      }
-
-      qInput.addEventListener('input', () => {
-        const val = qInput.value.trim();
-        selectedIdx = -1;
-        if (debounceTimeout) clearTimeout(debounceTimeout);
-        if (!val) {
-          list = [];
-          showSuggestions([]);
-          return;
-        }
-        const fetchId = ++lastFetchId;
-        debounceTimeout = setTimeout(async () => {
-          const sugg = await fetchSuggestions(val);
-          if (fetchId !== lastFetchId) return;
-          list = sugg;
-          showSuggestions(list);
-        }, 180);
-      });
-
-      qInput.addEventListener('keydown', (e) => {
-        if (!list.length || suggestionsDiv.style.display === 'none') return;
-        if (e.key === 'ArrowDown') {
-          selectedIdx = (selectedIdx + 1) % list.length;
-          showSuggestions(list);
-          e.preventDefault();
-        } else if (e.key === 'ArrowUp') {
-          selectedIdx = (selectedIdx - 1 + list.length) % list.length;
-          showSuggestions(list);
-          e.preventDefault();
-        } else if (e.key === 'Enter') {
-          if (selectedIdx >= 0 && selectedIdx < list.length) {
-            qInput.value = list[selectedIdx];
-            suggestionsDiv.style.display = 'none';
-            e.preventDefault();
-          }
-        } else if (e.key === 'Escape') {
-          suggestionsDiv.style.display = 'none';
-        }
-      });
-
-      document.addEventListener('click', (e) => {
-        if (!suggestionsDiv.contains(e.target) && e.target !== qInput) {
-          suggestionsDiv.style.display = 'none';
-        }
-      });
-    })();
 
     // Wire up search
     searchForm.addEventListener('submit', (e) => {

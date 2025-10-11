@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="resources/fonts/firasans-extra-condensed-googlefonts.css" rel="stylesheet">
   <title>Lumen</title>
+  <link href="resources/styles/branding.css" rel="stylesheet">
   <link href="resources/styles/homepage.css" rel="stylesheet">
   <link href="resources/styles/universal.css" rel="stylesheet">
 </head>
@@ -21,27 +21,22 @@
       </div>
 
       <div id="fastlane" class="fastlane" aria-hidden="true">
-        <div class="fl-grid">
-          <div class="fl-item"><div class="ico"></div><span>Mail</span></div>
-          <div class="fl-item"><div class="ico"></div><span>Docs</span></div>
-          <a href="/settings"><div class="fl-item"><div class="ico"></div><span>Settings</span></div></a>
-          <div class="fl-item"><div class="ico"></div><span>Profile</span></div>
-          <div class="fl-item"><div class="ico"></div><span>Shortcuts</span></div>
-          <div class="fl-item"><div class="ico"></div><span>Labs</span></div>
-        </div>
+        <h1>"Livin' the life in the Fast Lane..."</h1>
+        <h2>Fastlane is a go-to place for your searches and web surfing.</h2>
+        <p>Be it your pinned searches, themes, backgrounds, nodes, preferences and more, they will stay in this place. Stay tuned! It's not really a priority right now, as I need to fix other issues and experience problems.</p>
       </div>
     </div>
   </header>
 
   <main class="wrap">
-    <div id="logo" title="Click to shuffle (R to shuffle)">
-      <div class="logo-text" aria-label="Lumen"><span class="i">L</span><span class="rest">umen</span></div>
+    <div id="logo">
+      <span class="i">L</span><span class="rest">umen</span>
     </div>
 
     <div class="search-table">
       <div class="search-stack" id="searchStack">
         <form class="search" id="homeSearchForm" autocomplete="off">
-          <input class="q" id="q" name="q" type="search" placeholder="Search the Lumen" autofocus />
+          <input class="q" id="q" name="q" type="search" placeholder="" autofocus />
         </form>
 
         <!-- Inline Advanced -->
@@ -49,7 +44,7 @@
           <div class="adv-grid">
             <label>
               <span class="lbl">Node</span>
-              <input id="advNode" class="flt-input" placeholder="http://localhost:3000" />
+              <input id="advNode" class="flt-input" placeholder="e.g. https://node.example.com" />
               <div id="advNodeStatus" class="hint"></div>
             </label>
             <label>
@@ -85,7 +80,10 @@
   </footer>
 
   <script>
-    // Fastlane toggle (as before)
+    // === DEFAULT NODE CONFIGURATION ===
+    const DEFAULT_NODE = "http://localhost:3001"; // ← YOUR NODE
+
+    // Fastlane toggle
     const hdr = document.getElementById('hdr');
     const fastlaneBtn = document.getElementById('fastlaneBtn');
     const fastlane = document.getElementById('fastlane');
@@ -98,9 +96,9 @@
     fastlaneBtn.addEventListener('click', () => { fastlaneOpen = !fastlaneOpen; applyHeaderState(); });
     window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && fastlaneOpen) { fastlaneOpen = false; applyHeaderState(); } });
 
-    // Logo (unchanged)
+    // Logo
     const ASSET_DIR = "resources/logo/";
-    let LOGO_ASSETS = ["copycat.html","proc.html","flashlight.html","magnet.html"].map(x => ASSET_DIR + x);
+    let LOGO_ASSETS = ["copycat.html","proc.html","flashlight.html","magnet.html","mondrian.html","pointilism.html","coffee.html","pipes.html","captcha.html"].map(x => ASSET_DIR + x);
     const $logo = document.getElementById("logo");
     (async function initAssets() {
       try { const res = await fetch(ASSET_DIR + "manifest.json", { cache: "no-store" });
@@ -117,27 +115,56 @@
       else if(isImg(lower)){ $logo.innerHTML=""; const img=new Image(); img.alt="Lumen logo"; img.decoding="async"; img.src=url; $logo.appendChild(img); }
       else showDefaultLogo();
     }
-    $logo.addEventListener("click",(e)=>{ if(e.target === $logo) loadRandomLogo(); });
     window.addEventListener("load",()=>{ const q=document.getElementById("q"); if(q) q.focus({preventScroll:true}); });
 
     // Homepage search + inline Advanced
     const SEARCH_PAGE = '/lumsearch.html';
+
     const pageUrl = new URL(window.location.href);
-    const defaultNode = pageUrl.searchParams.get('node') || 'http://localhost:3000';
+    const urlNodeParam = pageUrl.searchParams.get('node');
+    const defaultNode = urlNodeParam !== null ? urlNodeParam : DEFAULT_NODE;
 
     const homeSearchForm = document.getElementById('homeSearchForm');
     const qInput = document.getElementById('q');
     const goBtn = document.getElementById('goBtn');
     const advancedBtn = document.getElementById('advancedBtn');
-
-    const searchStack = document.getElementById('searchStack');
-    const searchAdv = document.getElementById('searchAdv');
-
     const advNode = document.getElementById('advNode');
     const advNodeStatus = document.getElementById('advNodeStatus');
     const advMethod = document.getElementById('advMethod');
     const advFiltersWrap = document.getElementById('advFiltersWrap');
     const advFilters = document.getElementById('advFilters');
+
+    // Random fun placeholder suggestions
+    const placeholders = [
+      "Weather in New York…",
+      "What is periwinkle...",
+      "Why do cats purr...",
+      "Best pizza near me...",
+      "How fast can a snail go...",
+      "Who invented the paperclip...",
+      "Time in Tokyo right now...",
+      "Is cereal soup...",
+      "Can fish sneeze...",
+      "Quantum computing for kids...",
+      "How to fold a fitted sheet...",
+      "Why is the sky blue...",
+      "Coffee or tea...",
+      "How many stars are in the universe...",
+      "What's trending today...",
+      "Is AI taking over the world...",
+      "Where is the tallest tree...",
+      "Recipes with only 3 ingredients...",
+      "Meaning of life..."
+    ];
+
+    // Assign a random one on page load
+    qInput.placeholder = placeholders[Math.floor(Math.random() * placeholders.length)];
+
+
+    // Pre-fill node input if we have a default and input is empty
+    if (defaultNode && !advNode.value) {
+      advNode.value = defaultNode;
+    }
 
     let advOpen = false;
     let methods = [];
@@ -146,7 +173,7 @@
     let filterValues = {};
     let metadataFetchId = 0;
 
-    function escapeHtml(s=''){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function escapeHtml(s=''){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'<','>':'>','"':'&quot;',"'":'&#39;'}[c])); }
     function prettifyId(id){ return id.replace(/[-_]+/g,' ').replace(/([a-z0-9])([A-Z])/g,'$1 $2').replace(/\s+/g,' ').trim().replace(/\b\w/g,c=>c.toUpperCase()); }
     function getMethodLabel(id){ const caps = methodCapabilities[id] || {}; return caps.displayName || caps.label || caps.name || caps.title || prettifyId(id); }
 
@@ -155,9 +182,8 @@
       searchAdv.classList.toggle('open', advOpen);
       searchStack.classList.toggle('adv-open', advOpen);
       advancedBtn.textContent = advOpen ? 'Hide' : 'Advanced';
-      if (advOpen) {
-        if (!advNode.value) advNode.value = defaultNode;
-        if (!methods.length) fetchMetadata(); // first open
+      if (advOpen && !methods.length) {
+        fetchMetadata();
       }
     }
     advancedBtn.addEventListener('click', toggleAdvanced);
@@ -165,6 +191,13 @@
     async function fetchMetadata() {
       const fetchId = ++metadataFetchId;
       const node = (advNode.value || '').trim() || defaultNode;
+      if (!node) {
+        advNodeStatus.textContent = 'Node address is required to load methods.';
+        advMethod.innerHTML = '';
+        advFilters.innerHTML = '';
+        return;
+      }
+
       advNodeStatus.textContent = 'Loading methods…';
       try {
         const res = await fetch(node + '/metadata', { method: 'GET' });
@@ -221,16 +254,26 @@
       });
     }
 
-    advNode.addEventListener('change', () => { methods = []; methodCapabilities = {}; selectedMethod = ''; filterValues = {}; fetchMetadata(); });
+    advNode.addEventListener('change', () => { 
+      methods = []; 
+      methodCapabilities = {}; 
+      selectedMethod = ''; 
+      filterValues = {}; 
+      fetchMetadata(); 
+    });
     advMethod.addEventListener('change', () => { selectedMethod = advMethod.value; renderFilters(); });
 
     function buildSearchUrl() {
       const q = (qInput.value || '').trim();
       const node = (advNode.value || '').trim() || defaultNode;
+
+      if (!node) {
+        throw new Error('Node is required');
+      }
+
       const url = new URL(SEARCH_PAGE, window.location.origin);
       if (q) url.searchParams.set('q', q);
-      if (node) url.searchParams.set('node', node);
-      if (selectedMethod) url.searchParams.set('method', selectedMethod);
+      url.searchParams.set('node', node);
 
       const caps = methodCapabilities[selectedMethod] || {};
       const flts = Array.isArray(caps.filters) ? caps.filters : [];
@@ -242,8 +285,18 @@
     }
 
     function doSearchRedirect() {
-      if (!advNode.value) advNode.value = defaultNode; // ensure node is set even if Advanced never opened
-      window.location.href = buildSearchUrl();
+      const node = (advNode.value || '').trim() || defaultNode;
+      if (!node) {
+        advNodeStatus.textContent = 'Node address is required.';
+        advNode.focus();
+        return;
+      }
+      try {
+        window.location.href = buildSearchUrl();
+      } catch (e) {
+        advNodeStatus.textContent = 'Node address is required.';
+        advNode.focus();
+      }
     }
 
     homeSearchForm.addEventListener('submit', (e) => { e.preventDefault(); doSearchRedirect(); });
@@ -251,29 +304,27 @@
   </script>
   <script>
 (function() {
+  const DEFAULT_NODE = "http://localhost:3001"; // ← same as above
+
   const feSpan = document.getElementById('feVersion');
   const nodeSpan = document.getElementById('nodeVersion');
 
-  // Frontend version from meta or global (fallback to dev)
   const feMeta = document.querySelector('meta[name="app:version"]');
   const FRONTEND_VERSION = (window.__FRONTEND_VERSION__ || (feMeta && feMeta.content) || 'dev').trim();
   feSpan.textContent = `Frontend v${FRONTEND_VERSION}`;
 
-  // Node address: ?node=... or default
-  function getDefaultNode() {
+  function getUrlNode() {
     try {
       const u = new URL(window.location.href);
-      return u.searchParams.get('node') || 'http://localhost:3000';
+      return u.searchParams.get('node');
     } catch {
-      return 'http://localhost:3000';
+      return null;
     }
   }
 
-  // Try to read version and name from endpoints (both optional)
   async function fetchNodeInfo(nodeBase) {
     const info = { name: '', version: '' };
 
-    // Helper with timeout
     async function getJSON(url, ms = 2500) {
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), ms);
@@ -288,20 +339,17 @@
 
     try {
       const meta = await getJSON(nodeBase + '/metadata');
-      info.name = meta && (meta.name || '');
-      // If your backend ever adds a version to metadata
-      info.version = (meta && (meta.version || meta.nodeVersion)) || '';
+      info.name = meta?.name || '';
+      info.version = meta?.version || meta?.nodeVersion || '';
     } catch {}
 
     if (!info.version) {
       try {
         const health = await getJSON(nodeBase + '/health');
-        // If your backend ever adds version to health
-        info.version = (health && (health.version || health.nodeVersion)) || '';
+        info.version = health?.version || health?.nodeVersion || '';
       } catch {}
     }
 
-    // Fallbacks
     if (!info.name) {
       try { info.name = new URL(nodeBase).host; } catch { info.name = nodeBase; }
     }
@@ -309,6 +357,10 @@
   }
 
   async function updateNodeFooter(nodeBase) {
+    if (!nodeBase) {
+      nodeSpan.textContent = 'Node: not specified';
+      return;
+    }
     try {
       const info = await fetchNodeInfo(nodeBase);
       const verText = info.version ? ` v${info.version}` : '';
@@ -318,14 +370,14 @@
     }
   }
 
-  const initialNode = getDefaultNode();
+  const initialNode = getUrlNode() || DEFAULT_NODE;
   updateNodeFooter(initialNode);
 
-  // If Advanced node input exists, update footer when it changes
   const advNode = document.getElementById('advNode');
   if (advNode) {
     advNode.addEventListener('change', () => {
-      const nextNode = (advNode.value || '').trim() || getDefaultNode();
+      const val = advNode.value.trim();
+      const nextNode = val || getUrlNode() || DEFAULT_NODE;
       updateNodeFooter(nextNode);
     });
   }
