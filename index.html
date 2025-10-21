@@ -7,6 +7,252 @@
   <link href="resources/styles/branding.css" rel="stylesheet">
   <link href="resources/styles/homepage.css" rel="stylesheet">
   <link href="resources/styles/universal.css" rel="stylesheet">
+  <style>
+    .fastlane {
+      padding: 12px 0 16px;
+      border-top: 1px solid var(--hair);
+      display: none;
+    }
+    .fastlane.open { display: block; }
+    .fastlane h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .fastlane h2 {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .fl-tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--hair);
+      margin-bottom: 16px;
+      justify-content: center;
+    }
+    .fl-tab {
+      appearance: none;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      padding: 10px 16px;
+      cursor: pointer;
+      font: 14px/1.2 inherit;
+      border-bottom: 2px solid transparent;
+    }
+    .fl-tab:hover { color: var(--fg); }
+    .fl-tab.active {
+      color: var(--fg);
+      border-bottom-color: var(--acc);
+    }
+    .fl-content { display: none; }
+    .fl-content.active { display: block; }
+    .pinned-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .pinned-card {
+      border: 1px solid var(--hair);
+      padding: 12px;
+      cursor: pointer;
+      position: relative;
+      background: var(--bg);
+    }
+    .pinned-card:hover {
+      border-color: var(--acc);
+    }
+    .pinned-card-title {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      padding-right: 24px;
+    }
+    .pinned-card-query {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .pinned-card-meta {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .pinned-card-remove {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      appearance: none;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      padding: 2px 4px;
+      opacity: 0;
+    }
+    .pinned-card:hover .pinned-card-remove { opacity: 1; }
+    .pinned-card-remove:hover { color: var(--fg); }
+    .nodes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .node-item {
+      border: 1px solid var(--hair);
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .node-url {
+      font-family: ui-monospace, monospace;
+      font-size: 13px;
+      color: var(--fg);
+      word-break: break-all;
+    }
+    .node-status {
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+    .status-dot.offline { background: #ef4444; }
+    .node-remove {
+      appearance: none;
+      background: transparent;
+      border: 1px solid var(--hair);
+      color: var(--muted);
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .node-remove:hover {
+      border-color: var(--fg);
+      color: var(--fg);
+    }
+    .settings-group {
+      border: 1px solid var(--hair);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .settings-group-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--hair);
+    }
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      gap: 16px;
+    }
+    .setting-label { font-size: 14px; }
+    .setting-desc {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: var(--hair);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .toggle.active { background: var(--acc); }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background: var(--bg);
+      top: 3px;
+      left: 3px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .toggle.active::after { left: 23px; }
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--muted);
+    }
+    .empty-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      opacity: 0.5;
+    }
+        /* MOTD Banner Styles */
+    .motd-container {
+      margin-top: 24px;
+      width: 100%;
+    }
+
+    .motd-banner {
+      display: flex;
+      gap: 16px;
+      padding: 32px;
+      text-decoration: none;
+      color: var(--fg);
+      overflow: hidden;
+      width: 100%;
+      text-align: start;
+    }
+
+    .motd-banner img.motd-image {
+      object-fit: contain;
+      width: 96px;
+      height: 96px;
+    }
+
+    .motd-content {
+      justify-content: center;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex-grow: 1;
+      min-width: 0; /* Prevents text overflow issues in flexbox */
+    }
+
+    .motd-header {
+      font-size: 16px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .motd-subtitle {
+      font-size: 14px;
+      color: var(--muted); /* Use existing theme variable */
+      line-height: 1.4;
+    }
+    
+    .motd-header.is-clickable {
+      color: var(--acc);
+      text-decoration: none;
+    }
+  </style>
 </head>
 <body>
   <header id="hdr" class="hdr" style="--hdr-h:72px">
@@ -21,9 +267,60 @@
       </div>
 
       <div id="fastlane" class="fastlane" aria-hidden="true">
-        <h1>"Livin' the life in the Fast Lane..."</h1>
-        <h2>Fastlane is a go-to place for your searches and web surfing.</h2>
-        <p>Be it your pinned searches, themes, backgrounds, nodes, preferences and more, they will stay in this place. Stay tuned! It's not really a priority right now, as I need to fix other issues and experience problems.</p>
+        <h1>Fastlane</h1>
+        
+        <div class="fl-tabs">
+          <button class="fl-tab active" data-tab="pinned">Pinned</button>
+          <button class="fl-tab" data-tab="nodes">Nodes</button>
+          <button class="fl-tab" data-tab="settings">Settings</button>
+        </div>
+
+        <div id="pinnedTab" class="fl-content active">
+          <div id="pinnedGrid" class="pinned-grid"></div>
+          <button class="btn" id="addPinnedBtn">+ Add Pinned Search</button>
+        </div>
+
+        <div id="nodesTab" class="fl-content">
+          <div id="nodesList" class="nodes-list"></div>
+          <button class="btn" id="addNodeBtn">+ Add Node</button>
+        </div>
+
+        <div id="settingsTab" class="fl-content">
+          <div class="settings-group">
+            <div class="settings-group-title">Appearance</div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Dark Mode</div>
+                <div class="setting-desc">Follows system preference</div>
+              </div>
+              <div class="toggle active"></div>
+            </div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Animated Logos</div>
+                <div class="setting-desc">Show animated logo variations</div>
+              </div>
+              <div class="toggle active" id="toggleLogos"></div>
+            </div>
+          </div>
+          <div class="settings-group">
+            <div class="settings-group-title">Search</div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Auto-focus Search</div>
+                <div class="setting-desc">Focus search box on load</div>
+              </div>
+              <div class="toggle active" id="toggleAutofocus"></div>
+            </div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Save History</div>
+                <div class="setting-desc">Keep track of recent searches</div>
+              </div>
+              <div class="toggle active" id="toggleHistory"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -38,6 +335,8 @@
         <form class="search" id="homeSearchForm" autocomplete="off">
           <input class="q" id="q" name="q" type="search" placeholder="" autofocus />
         </form>
+
+
 
         <!-- Inline Advanced -->
         <div id="searchAdv" class="search-adv" aria-label="Advanced search">
@@ -62,7 +361,7 @@
       <button id="goBtn" class="bar-search-button" type="button">Go</button>
       <button id="advancedBtn" class="bar-param-button" type="button" style="width:auto; padding:0 10px;">Advanced</button>
     </div>
-    
+            <div id="motd-container" class="motd-container"></div>
   </main>
   <footer id="siteFooter" class="site-footer" role="contentinfo" aria-label="Footer">
     <div class="foot-inner">
@@ -78,6 +377,7 @@
       </nav>
     </div>
   </footer>
+  
 
   <script>
     // === DEFAULT NODE CONFIGURATION ===
@@ -98,7 +398,7 @@
 
     // Logo
     const ASSET_DIR = "resources/logo/";
-    let LOGO_ASSETS = ["copycat.html","proc.html","flashlight.html","magnet.html","mondrian.html","pointilism.html","coffee.html","pipes.html","captcha.html"].map(x => ASSET_DIR + x);
+    let LOGO_ASSETS = ["copycat.html","proc.html","flashlight.html","magnet.html","mondrian.html","pointilism.html","coffee.html","pipes.html","captcha.html","dos.html"].map(x => ASSET_DIR + x);
     const $logo = document.getElementById("logo");
     (async function initAssets() {
       try { const res = await fetch(ASSET_DIR + "manifest.json", { cache: "no-store" });
@@ -383,5 +683,215 @@
   }
 })();
 </script>
+  <script>
+    const state = {
+      pinned: JSON.parse(localStorage.getItem('lumen_pinned') || '[]'),
+      nodes: JSON.parse(localStorage.getItem('lumen_nodes') || '[{"url":"http://localhost:3001","active":true}]')
+    };
+
+    function save() {
+      localStorage.setItem('lumen_pinned', JSON.stringify(state.pinned));
+      localStorage.setItem('lumen_nodes', JSON.stringify(state.nodes));
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && fastlaneOpen) {
+        fastlaneOpen = false;
+        fastlane.classList.remove('open');
+        hdr.classList.remove('is-fastlane');
+        fastlane.setAttribute('aria-hidden', 'true');
+      }
+    });
+
+    document.querySelectorAll('.fl-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.fl-tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.fl-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab + 'Tab').classList.add('active');
+      });
+    });
+
+    function renderPinned() {
+      const grid = document.getElementById('pinnedGrid');
+      if (state.pinned.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📌</div><div>No pinned searches yet</div></div>';
+        return;
+      }
+      grid.innerHTML = state.pinned.map((pin, i) => `
+        <div class="pinned-card" onclick="window.location.href='/lumsearch.html?q=${encodeURIComponent(pin.query)}&node=${encodeURIComponent(pin.node)}'">
+          <button class="pinned-card-remove" onclick="event.stopPropagation(); removePinned(${i})">×</button>
+          <div class="pinned-card-title">${escapeHtml(pin.title || pin.query)}</div>
+          <div class="pinned-card-query">${escapeHtml(pin.query)}</div>
+          <div class="pinned-card-meta">Pinned ${new Date(pin.date).toLocaleDateString()}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderNodes() {
+      const list = document.getElementById('nodesList');
+      if (state.nodes.length === 0) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">🔌</div><div>No nodes configured</div></div>';
+        return;
+      }
+      list.innerHTML = state.nodes.map((node, i) => `
+        <div class="node-item">
+          <div style="flex:1; min-width:0">
+            <div class="node-url">${escapeHtml(node.url)}</div>
+            <div class="node-status">
+              <div class="status-dot ${node.active ? '' : 'offline'}"></div>
+              ${node.active ? 'Active' : 'Inactive'}
+            </div>
+          </div>
+          <button class="node-remove" onclick="removeNode(${i})">Remove</button>
+        </div>
+      `).join('');
+    }
+
+    function escapeHtml(s) {
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    window.removePinned = (i) => {
+      state.pinned.splice(i, 1);
+      save();
+      renderPinned();
+    };
+
+    window.removeNode = (i) => {
+      if (state.nodes.length === 1) {
+        alert('You must have at least one node');
+        return;
+      }
+      state.nodes.splice(i, 1);
+      save();
+      renderNodes();
+    };
+
+    document.getElementById('addPinnedBtn').addEventListener('click', () => {
+      const query = prompt('Enter search query:');
+      if (query && query.trim()) {
+        state.pinned.push({
+          query: query.trim(),
+          title: query.trim(),
+          node: state.nodes[0]?.url || 'http://localhost:3001',
+          date: Date.now()
+        });
+        save();
+        renderPinned();
+      }
+    });
+
+    document.getElementById('addNodeBtn').addEventListener('click', () => {
+      const url = prompt('Enter node URL:');
+      if (url && url.trim()) {
+        state.nodes.push({ url: url.trim(), active: true });
+        save();
+        renderNodes();
+      }
+    });
+
+    document.querySelectorAll('.toggle').forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        toggle.classList.toggle('active');
+      });
+    });
+
+    document.getElementById('goBtn').addEventListener('click', () => {
+      const q = document.getElementById('q').value.trim();
+      if (q) {
+        window.location.href = `/lumsearch.html?q=${encodeURIComponent(q)}&node=${encodeURIComponent(state.nodes[0]?.url || 'http://localhost:3001')}`;
+      }
+    });
+
+    renderPinned();
+    renderNodes();
+  </script>
+    <script>
+    (function() {
+      // This IIFE (Immediately Invoked Function Expression) keeps the scope clean.
+      document.addEventListener('DOMContentLoaded', () => {
+        const motdContainer = document.getElementById('motd-container');
+        if (!motdContainer) return;
+
+        // Use the same logic as other scripts to determine the current node.
+        const pageUrl = new URL(window.location.href);
+        const urlNodeParam = pageUrl.searchParams.get('node');
+        const currentNode = urlNodeParam || window.DEFAULT_NODE || 'http://localhost:3001';
+
+        async function fetchAndRenderMOTD() {
+          try {
+            const response = await fetch(`${currentNode}/motd`);
+            if (!response.ok) {
+              throw new Error(`MOTD endpoint failed with status ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Don't render anything if there's no message content.
+            if (!data.header && !data.subtitle) {
+              return;
+            }
+
+            // Create the main banner element. If there's a link, it's an <a> tag.
+            const isClickable = !!data.header_link;
+            const banner = document.createElement('div');
+            banner.className = 'motd-banner';
+
+
+            // 1. Create and add the Image (if it exists)
+            if (data.image) {
+              const imageUrl = new URL(data.image, currentNode).href;
+              const img = document.createElement('img');
+              img.src = imageUrl;
+              img.alt = data.header || 'MOTD Image';
+              img.className = 'motd-image';
+              banner.appendChild(img);
+            }
+
+            // 2. Create the content container for text
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'motd-content';
+
+            // 3. Create and add the Header (if it exists)
+            if (data.header) {
+              const headerDiv = document.createElement(isClickable ? 'a' : 'div');
+              headerDiv.className = 'motd-header';
+              headerDiv.textContent = data.header;
+              contentDiv.appendChild(headerDiv);
+              if (isClickable) {
+                headerDiv.classList.add('is-clickable');
+                headerDiv.href = data.header_link;
+                headerDiv.target = '_blank'; // Open in a new tab
+                headerDiv.rel = 'noopener noreferrer';
+              }
+            }
+
+            // 4. Create and add the Subtitle (if it exists)
+            if (data.subtitle) {
+              const subtitleDiv = document.createElement('div');
+              subtitleDiv.className = 'motd-subtitle';
+              subtitleDiv.textContent = data.subtitle;
+              contentDiv.appendChild(subtitleDiv);
+            }
+            
+            banner.appendChild(contentDiv);
+            
+            // Clear the container and inject the new banner
+            motdContainer.innerHTML = '';
+            motdContainer.appendChild(banner);
+
+          } catch (error) {
+            console.error('Could not fetch or render MOTD:', error);
+            // Do nothing on the UI, the banner will simply not appear.
+          }
+        }
+
+        fetchAndRenderMOTD();
+      });
+    })();
+  </script>
 </body>
 </html>
