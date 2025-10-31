@@ -94,3 +94,53 @@ body {
 .foot-links a:hover {
   text-decoration: underline;
 }
+        /* MOTD Banner Styles */
+    .motd-container {
+      margin-top: 24px;
+      width: 100%;
+    }
+
+    .motd-banner {
+      display: flex;
+      gap: 16px;
+      padding: 32px;
+      text-decoration: none;
+      color: var(--fg);
+      overflow: hidden;
+      width: 100%;
+      text-align: start;
+    }
+
+    .motd-banner img.motd-image {
+      object-fit: contain;
+      width: 96px;
+      height: 96px;
+    }
+
+    .motd-content {
+      justify-content: center;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex-grow: 1;
+      min-width: 0; /* Prevents text overflow issues in flexbox */
+    }
+
+    .motd-header {
+      font-size: 16px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .motd-subtitle {
+      font-size: 14px;
+      color: var(--muted); /* Use existing theme variable */
+      line-height: 1.4;
+    }
+    
+    .motd-header.is-clickable {
+      color: var(--acc);
+      text-decoration: none;
+    }

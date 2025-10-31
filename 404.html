@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found</title>
+    <link rel="stylesheet" href="/resources/styles/universal.css">
+    <style>
+        @font-face {
+            font-family: 'ComicCode';
+            src: url('/resources/fonts/comic-code.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .error-container {
+            text-align: center;
+        }
+
+        svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 30px;
+        }
+
+        .error-icon {
+            stroke: var(--acc);
+            stroke-width: 16;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: url(#turbulence);
+            opacity: 0.9;
+        }
+
+        .error-circle {
+            stroke: var(--acc);
+            stroke-width: 16;
+            fill: rgba(255, 255, 255, 0);
+            filter: url(#turbulence);
+        }
+
+        h1 {
+            font-family: 'ComicCode';
+            font-size: 2rem;
+            font-weight: 300;
+            color: var(--fg);
+            opacity: 0.5;
+            font-weight: 100;
+            user-select: none;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <svg viewBox="0 0 200 200">
+            <defs>
+                <!-- Turbulence Filter -->
+                <filter id="turbulence" x="-20%" y="-20%" width="140%" height="140%">
+                    <feTurbulence 
+                        type="fractalNoise" 
+                        baseFrequency="0.01 0.01" 
+                        numOctaves="2" 
+                        result="turbulence" 
+                        seed="1">
+                        <animate 
+                            attributeName="seed" 
+                            from="1" 
+                            to="20" 
+                            dur="3s" 
+                            repeatCount="indefinite" />
+                    </feTurbulence>
+                    <feDisplacementMap 
+                        in2="turbulence" 
+                        in="SourceGraphic" 
+                        scale="15" 
+                        xChannelSelector="R" 
+                        yChannelSelector="G" />
+                </filter>
+            </defs>
+
+            <!-- Error Circle -->
+            <circle class="error-circle" cx="100" cy="100" r="80" />
+            
+            <!-- X Mark -->
+            <g class="error-icon">
+                <line x1="70" y1="70" x2="130" y2="130" />
+                <line x1="130" y1="70" x2="70" y2="130" />
+            </g>
+        </svg>
+
+        <h1>not found</h1>
+    </div>
+
+    <script>
+        // Click to increase turbulence temporarily
+        document.addEventListener('click', () => {
+            const filter = document.querySelector('feDisplacementMap');
+            filter.setAttribute('scale', '100');
+            setTimeout(() => {
+                filter.setAttribute('scale', '15');
+            }, 300);
+        });
+    </script>
+</body>
+</html>

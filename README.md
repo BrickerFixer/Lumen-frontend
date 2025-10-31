@@ -13,6 +13,11 @@ This is a standalone frontend for the search node. It includes all HTML, CSS, an
 2. Set the backend node address in the UI.
 3. Use the search bar and method sidebar to interact with your search node backend.
 
+## Credit
+
+Fira Sans extra condensed font - https://github.com/mozilla/Fira
+Comic Mono (referred as comic code in assets as a typo) - https://dtinth.github.io/comic-mono-font/
+
 ---
 
 **Note:** This project does not include any backend code. The backend node must be running and accessible for the frontend to function.
